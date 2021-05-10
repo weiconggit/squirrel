@@ -16,7 +16,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class StringToMapConverter implements Converter<String, Map<String, Object>>{
 
-	private ObjectMapper objectMapper;
+	private final ObjectMapper objectMapper;
 	
 	public StringToMapConverter(ObjectMapper objectMapper) {
 		this.objectMapper = objectMapper;

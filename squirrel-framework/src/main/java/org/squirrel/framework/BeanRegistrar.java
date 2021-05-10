@@ -55,18 +55,16 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2WebMvc;
 public class BeanRegistrar implements ImportBeanDefinitionRegistrar {
 
 	private static final Logger log = LoggerFactory.getLogger(BeanRegistrar.class);
-	private static final String REDISSON_CONFIG_FILE_NAME = "redisson-squ.yml";
-	
+
 	@Override
 	public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
-		log.info("{} Framework registry beans", Language.LOG_SIGN);
-		
 		String packageName = BeanRegistrar.class.getPackage().getName();
 		
 		if (log.isDebugEnabled()) {
-			log.debug("{} Framework scan package is: {}", Language.LOG_SIGN, packageName);
+			log.debug("{} Framework scan package is: {}", SquirrelProperties.LOG_SIGN, packageName);
 		}
-		
+
+		// 扫描所有待注册的 spring bean
 		Set<Class<?>> classes = ClassUtil.getClasses(packageName);
 		Iterator<Class<?>> iterator = classes.iterator();
 		RootBeanDefinition beanDefinition = null;
@@ -79,14 +77,14 @@ public class BeanRegistrar implements ImportBeanDefinitionRegistrar {
 					registry.registerBeanDefinition(StrUtil.lowerFirstLetter(clazz.getSimpleName()), beanDefinition);
 					
 					if (log.isDebugEnabled()) {
-						log.debug("{} Framework registry bean: {}", Language.LOG_SIGN, StrUtil.lowerFirstLetter(clazz.getSimpleName()));
+						log.debug("{} Framework registry bean: {}", SquirrelProperties.LOG_SIGN, clazz.getSimpleName());
 					}
 					
 					break;
 				}
 			}
 		}
-		
+		// 需要特殊处理的 spring bean
 		registrySpecialBean(registry);
 		registryAuthCacheBean(registry);
 	}
@@ -114,44 +112,45 @@ public class BeanRegistrar implements ImportBeanDefinitionRegistrar {
 	}
 
 	/**
-	 * 权限缓存bean注册，如果有 redisson 会同时注册 redisson
+	 * 权限缓存bean注册
 	 * @param registry
 	 */
 	private void registryAuthCacheBean(BeanDefinitionRegistry registry) {
-		String path = System.getProperty("user.dir");
-		path = new StringBuilder(File.separator).append(path).append(File.separator)
-				.append("src").append(File.separator)
-				.append("main").append(File.separator)
-				.append("resources").append(File.separator)
-				.append(REDISSON_CONFIG_FILE_NAME).toString();
-		
-		String beanName = StrUtil.lowerFirstLetter(AuthCache.class.getSimpleName());
-		File file = new File(path);
-		// redisson 配置文件是否存在，不存在使用 caffeine cache
-		if (!file.exists()) {
-			log.info("{} Enable caffeine cache", Language.LOG_SIGN);
+		// 2021年5月10日 增加 redisson 配置文件名定义
+		String redissonFileName = SquirrelProperties.REDISSON_FILE_NAME;
+		String authCache = StrUtil.lowerFirstLetter(AuthCache.class.getSimpleName());
+		// 无配置文件时，启用 caffeine 否则启用 redisson
+		if (StrUtil.isEmpty(redissonFileName)) {
+			log.info("{} Enable caffeine cache", SquirrelProperties.LOG_SIGN);
 			RootBeanDefinition beanDefinition = new RootBeanDefinition(CaffeineSquirrelCache.class);
-			registry.registerBeanDefinition(beanName, beanDefinition);
-			return;
-		}
-		try {
-			Config config = Config.fromYAML(new File(path));
-			if (config == null) {
-				log.error("{} Redisson config from yaml is null", Language.LOG_SIGN);
+			registry.registerBeanDefinition(authCache, beanDefinition);
+		} else {
+			log.info("{} Enable redis cahce", SquirrelProperties.LOG_SIGN);
+			String path = System.getProperty("user.dir");
+			path = new StringBuilder(File.separator).append(path).append(File.separator)
+					.append("src").append(File.separator)
+					.append("main").append(File.separator)
+					.append("resources").append(File.separator)
+					.append(redissonFileName).toString();
+			File file = new File(path);
+			if (!file.exists()) {
+				log.error("{} Redisson file not exists: {}", SquirrelProperties.LOG_SIGN, path);
 				return;
 			}
-			RedissonClient redissonClient = Redisson.create(config);
-			RedissonSquirrelCache.setRedissonCache(redissonClient);
-			log.info("{} Enable redis cahce", Language.LOG_SIGN);
-			
-			RootBeanDefinition beanDefinition = new RootBeanDefinition(RedissonSquirrelCache.class);
-			registry.registerBeanDefinition(beanName, beanDefinition);
-			
-			// 同时注册 redissonClient
-			beanDefinition = new RootBeanDefinition(RedissonClient.class, () -> redissonClient);
-			registry.registerBeanDefinition(StrUtil.lowerFirstLetter(RedissonClient.class.getSimpleName()), beanDefinition);
-		} catch (IOException e) {
-			log.error("{} Redisson config from yaml error: {}", Language.LOG_SIGN, e);
+			try {
+				// redisson 自定义配置文件官方使用步骤
+				Config config = Config.fromYAML(file);
+				RedissonClient redissonClient = Redisson.create(config);
+				RedissonSquirrelCache.setRedissonCache(redissonClient);
+				// 注册 AuthCache 的实现类
+				RootBeanDefinition beanDefinition = new RootBeanDefinition(RedissonSquirrelCache.class);
+				registry.registerBeanDefinition(authCache, beanDefinition);
+				// 注册 RedissonClient
+				beanDefinition = new RootBeanDefinition(RedissonClient.class, () -> redissonClient);
+				registry.registerBeanDefinition(StrUtil.lowerFirstLetter(RedissonClient.class.getSimpleName()), beanDefinition);
+			} catch (IOException e) {
+				log.error("{} Redisson config from yaml error: {}", SquirrelProperties.LOG_SIGN, e);
+			}
 		}
 	}
 	

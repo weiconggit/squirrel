@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RestController;
-import org.squirrel.framework.Language;
+import org.squirrel.framework.SquirrelProperties;
 import org.squirrel.framework.util.ClassUtil;
 import org.squirrel.framework.util.StrUtil;
 
@@ -29,8 +29,6 @@ public class SysBeanRegistrar implements ImportBeanDefinitionRegistrar  {
 
 	@Override
 	public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
-		log.info("{} Sys Registry beans", Language.LOG_SIGN);
-		
 		Set<Class<?>> classes = ClassUtil.getClasses("org.squirrel.sys");
 		Iterator<Class<?>> iterator = classes.iterator();
 		while (iterator.hasNext()) {
@@ -45,7 +43,7 @@ public class SysBeanRegistrar implements ImportBeanDefinitionRegistrar  {
 					registry.registerBeanDefinition(StrUtil.lowerFirstLetter(clazz.getSimpleName()), beanDefinition);
 					
 					if (log.isDebugEnabled()) {
-						log.debug("{} Sys registry bean: {}", Language.LOG_SIGN, StrUtil.lowerFirstLetter(clazz.getSimpleName()));
+						log.debug("{} Sys registry bean: {}", SquirrelProperties.LOG_SIGN, StrUtil.lowerFirstLetter(clazz.getSimpleName()));
 					}
 					
 					break;

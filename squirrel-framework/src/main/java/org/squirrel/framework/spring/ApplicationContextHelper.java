@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.squirrel.framework.Language;
+import org.squirrel.framework.SquirrelProperties;
 import org.squirrel.framework.SquirrelComponent;
 import org.squirrel.framework.SquirrelInitializer;
 
@@ -37,24 +37,24 @@ public final class ApplicationContextHelper implements ApplicationContextAware {
 
 	private static void setStaticApplicationContext(ApplicationContext applicationContext) {
 		context = applicationContext;
-	} 
-    
-    private void initSpringInitializer() {
+	}
+
+	private void initSpringInitializer() {
 		Map<String, SquirrelInitializer> map = context.getBeansOfType(SquirrelInitializer.class);
 		
     	if (!map.isEmpty()) {
     		
     		if (log.isDebugEnabled()) {
-    			map.values().forEach( v-> log.debug("{} SpringInitializer init: {}", Language.LOG_SIGN, v.getClass().getName()));
+    			map.values().forEach( v-> log.debug("{} SpringInitializer init: {}", SquirrelProperties.LOG_SIGN, v.getClass().getName()));
     		}
     		
-    		map.values().stream().forEach(SquirrelInitializer::init);
+    		map.values().forEach(SquirrelInitializer::init);
 		}
     }
 
     /**
      * 获取 ApplicationContext
-     * @return
+     * @return ApplicationContext。class
      */
     public static ApplicationContext getContext() {
         return context;
@@ -64,7 +64,7 @@ public final class ApplicationContextHelper implements ApplicationContextAware {
      * 获取spring bean对象
      * 
      * @param name bean的name
-     * @return
+     * @return Spring bean
      * @throws BeansException
      */
     public static Object getBean(String name) {

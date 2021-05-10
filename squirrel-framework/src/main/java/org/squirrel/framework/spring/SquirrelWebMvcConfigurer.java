@@ -12,7 +12,7 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import org.squirrel.framework.Language;
+import org.squirrel.framework.SquirrelProperties;
 import org.squirrel.framework.SquirrelComponent;
 import org.squirrel.framework.auth.AuthInterceptor;
 
@@ -38,14 +38,14 @@ public class SquirrelWebMvcConfigurer implements WebMvcConfigurer {
 	
 	@Override
 	public void addCorsMappings(CorsRegistry registry) {
-		log.info("{} Framework CorsMapping add", Language.LOG_SIGN);
+		log.info("{} Framework CorsMapping add", SquirrelProperties.LOG_SIGN);
 		registry.addMapping("/**").allowedOrigins("*").allowedMethods("POST", "GET", "PUT", "OPTIONS", "DELETE")
 				.allowedHeaders("*").maxAge(3600).allowCredentials(true);
 	}
 	
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {
-		log.info("{} Framework AuthInterceptor add", Language.LOG_SIGN);
+		log.info("{} Framework AuthInterceptor add", SquirrelProperties.LOG_SIGN);
 		registry.addInterceptor(authInterceptor);
 	}
 	
@@ -54,7 +54,7 @@ public class SquirrelWebMvcConfigurer implements WebMvcConfigurer {
 	 */
 	@Override
 	public void addFormatters(FormatterRegistry registry) {
-		log.info("{} Framework StringToMapConverter add", Language.LOG_SIGN);
+		log.info("{} Framework StringToMapConverter add", SquirrelProperties.LOG_SIGN);
 		registry.addConverter(new StringToMapConverter(objectMapper));
 	}
 

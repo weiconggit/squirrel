@@ -7,6 +7,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * 需要spring管理的组件
  * @author weicong
  * @time   2021年2月21日
  * @version 1.0

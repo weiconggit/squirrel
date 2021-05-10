@@ -44,7 +44,7 @@ public final class StrUtil {
 	/**
 	 * 每个单词第一个字母大写，并且拼接为一个单词
 	 * @param words
-	 * @param isFirstLetterUpper 是否需要拼接后单词首字母大写
+	 * @param needFirstLetterUpper 是否需要拼接后单词首字母大写
 	 * @return
 	 */
 	public static String upperFirstLetterOfWords(String[] words, boolean needFirstLetterUpper) {

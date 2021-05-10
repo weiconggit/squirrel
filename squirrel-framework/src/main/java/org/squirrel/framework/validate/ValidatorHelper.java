@@ -19,7 +19,7 @@ import net.sf.oval.internal.util.ReflectionUtils;
 import net.sf.oval.localization.message.ResourceBundleMessageResolver;
 
 /**
- * 重写oval校验逻辑，使其校验到一个错误后即可停止返回，不在继续校验之后的字段
+ * 重写oval校验逻辑，使其校验到一个错误后即可停止返回，不再继续校验之后的字段
  * @author weicong
  * @time   2020年12月22日
  * @version 1.0
@@ -77,7 +77,7 @@ public class ValidatorHelper extends Validator {
 					for (final Check check : checks) {
 						checkConstraint(violations, check, validatedObject, valueToValidate, ctx, profiles, false, 
 								false);
-						// 2020年12月22日 新增自定义逻辑，校验出字段错误停止循环
+						// 新增自定义逻辑，校验出字段错误停止循环
 						if (!violations.isEmpty()) {
 							break;
 						}
@@ -152,6 +152,7 @@ public class ValidatorHelper extends Validator {
 
 				for (final Check check : checks) {
 					checkConstraint(violations, check, validatedClass, valueToValidate, context, profiles, false, false);
+					// 新增自定义逻辑，校验出字段错误停止循环
 					if (!violations.isEmpty()) {
 						break;
 					}

@@ -9,6 +9,5 @@ package org.squirrel.framework;
 public interface SquirrelInitializer {
 	
 	void init();
-	
-	// XXX 可添加执行顺序
+
 }

@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.squirrel.framework.Language;
+import org.squirrel.framework.SquirrelProperties;
 import org.squirrel.framework.spring.ApplicationContextHelper;
 import org.squirrel.framework.util.StrUtil;
 
@@ -67,7 +67,7 @@ public final class AuthMenuLoader {
 				String[] value = requestMapping.value();
 				moduleUri = value[0];
 			}
-			String langName = Language.get(moduleUri);
+			String langName = SquirrelProperties.get(moduleUri);
 			langName = StrUtil.isEmpty(langName) ? moduleUri : langName;
 			
 			// 获取类方法对应的权限信息
@@ -131,7 +131,7 @@ public final class AuthMenuLoader {
 						.append(uri).toString();
 				AuthMenu child = new AuthMenu()
 						.setId(authId)
-						.setName(Language.get(authVal))
+						.setName(SquirrelProperties.get(authVal))
 						.setType("1")
 						.setMethod(rqMethod)
 						.setUri(uri);

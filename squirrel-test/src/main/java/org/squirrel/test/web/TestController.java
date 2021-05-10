@@ -27,8 +27,8 @@ public class TestController {
 	
 //	@Autowired
 //    private ApplicationContext applicationContext;
-	@Resource
-	private RedissonClient redissonClient;
+//	@Resource
+//	private RedissonClient redissonClient;
 	@Resource
 	private AuthCache authCache;
 	@Resource
@@ -42,7 +42,7 @@ public class TestController {
 	@ApiOperation(value="获取列表信息")
 	@GetMapping("alive")
 	public String test() {
-		redissonClient.getMap("a").put("1", "1");
+//		redissonClient.getMap("a").put("1", "1");
 		return "test api";
 	}
 	
