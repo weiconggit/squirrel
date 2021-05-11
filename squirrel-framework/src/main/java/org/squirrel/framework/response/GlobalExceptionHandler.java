@@ -37,37 +37,27 @@ public final class GlobalExceptionHandler {
 	public Rp<?> processException(Exception e, HttpServletRequest request, HttpServletResponse response) {
 		// 参数错误
 		if (e instanceof MissingServletRequestParameterException) {
-			log.info("MissingServletRequestParameterException=", e);
+			log.error("MissingServletRequestParameterException: ", e);
 			return Rp.failed(RpEnum.ERROR_PARAMETER);
 		}
-
 		// 统一参数校验错误转换
 		if (e instanceof MethodArgumentNotValidException) {
-			log.info("MethodArgumentNotValidException=", e);
+			log.error("MethodArgumentNotValidException: ", e);
 			List<ObjectError> errors = ((MethodArgumentNotValidException) e).getBindingResult().getAllErrors();
-			return Rp.failed(RpEnum.ERROR_PARAMETER, errors.isEmpty() ? "未知参数错误！" : errors.get(0).getDefaultMessage());
+			return Rp.failed(RpEnum.ERROR_PARAMETER, errors.isEmpty() ? RpEnum.ERROR_PARAMETER.getMsg() : errors.get(0).getDefaultMessage());
 		}
 		if (e instanceof BindException) {
-			log.info("BindException=", e);
+			log.error("BindException: ", e);
 			List<ObjectError> errors = ((BindException) e).getBindingResult().getAllErrors();
-			return Rp.failed(RpEnum.ERROR_PARAMETER, errors.isEmpty() ? "未知参数错误！" : errors.get(0).getDefaultMessage());
+			return Rp.failed(RpEnum.ERROR_PARAMETER, errors.isEmpty() ? RpEnum.ERROR_PARAMETER.getMsg() : errors.get(0).getDefaultMessage());
 		}
-
 		// 业务异常
 		if (e instanceof BizException) {
 			BizException exception = (BizException) e;
-			log.info("BizException: code={}, message={}", exception.getCode(), exception.getMessage());
-			if (RpEnum.NO_AUTHEN.getCode().equals(exception.getFrontCode())) {
-				return Rp.failed(RpEnum.NO_AUTHEN, exception.getMessage());
-			} else if (RpEnum.NO_AUTHOR.getCode().equals(exception.getFrontCode())) {
-				return Rp.failed(RpEnum.NO_AUTHOR, exception.getMessage());
-			} else if (RpEnum.NO_PERMIT.getCode().equals(exception.getFrontCode())) {
-				return Rp.failed(RpEnum.NO_PERMIT, exception.getMessage());
-			} else {
-				return Rp.failed(RpEnum.ERROR_SYSTEM, exception.getMessage());
-			}
+			log.error("BizException code: {}, message: {}", exception.getCode(), exception.getMessage());
+			return Rp.failed(exception.getCode());
 		}
-		log.info("全局异常ex= ", e);
+		log.error("全局异常: ", e);
 		return Rp.failed(RpEnum.ERROR_SYSTEM);
 	}
 

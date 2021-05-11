@@ -61,5 +61,20 @@ public final class StrUtil {
 		}
 		return builder.toString();
 	}
-	
+
+	/**
+	 * 字符串是否时正整数
+	 * @param string
+	 * @return
+	 */
+	public static boolean isNum(String string){
+		if (isEmpty(string)) {
+			return false;
+		}
+		return string.matches("\\d*");
+	}
+
+	public static boolean isNotNum(String string) {
+		return !isNum(string);
+	}
 }

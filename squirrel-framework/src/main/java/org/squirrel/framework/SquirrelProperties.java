@@ -69,4 +69,13 @@ public final class SquirrelProperties {
 		}
 		return string;
 	}
+
+	/**
+	 * 获取错误信息
+	 * @param key
+	 * @return
+	 */
+	public static String get(Integer key) {
+		return allProperties.get(String.valueOf(key));
+	}
 }

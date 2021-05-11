@@ -1,5 +1,8 @@
 package org.squirrel.framework.response;
 
+import org.squirrel.framework.SquirrelProperties;
+import org.squirrel.framework.util.StrUtil;
+
 import java.io.Serializable;
 
 /**
@@ -30,16 +33,10 @@ public final class Rp<E> implements Serializable {
 	// ~ 对外方法
 	// ======================================================
 
-	/**
-	 * 返回成功信息
-	 */
 	public static <E> Rp<E> success() {
 		return build(RpEnum.SUCCESS);
 	}
-	
-	/**
-	 * 返回查询结果信息
-	 */
+
 	public static <E> Rp<E> success(E data) {
 		return new Rp<>(RpEnum.SUCCESS.getCode(), RpEnum.SUCCESS.getMsg(), data);
 	}
@@ -52,6 +49,15 @@ public final class Rp<E> implements Serializable {
 		return new Rp<>(rpEnum.getCode(), msg);
 	}
 
+	public static <E> Rp<E> failed(Integer propertyKey) {
+		if (propertyKey != null) {
+			String propertyVal = SquirrelProperties.get(propertyKey);
+			if (StrUtil.isNum(propertyVal)) {
+				return new Rp<>(propertyKey, propertyVal);
+			}
+		}
+		return build(RpEnum.ERROR_SYSTEM);
+	}
 
 	private static <E> Rp<E> build(RpEnum rpEnum) {
 		return new Rp<>(rpEnum.getCode(), rpEnum.getMsg());

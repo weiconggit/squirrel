@@ -12,26 +12,32 @@ public final class BizException extends RuntimeException {
 	
 	private static final long serialVersionUID = -1971580736283989021L;
 
-	private Integer code;
-    private Integer frontCode;
-    private String message;
+	private final Integer code;
+    private final String message;
 
-	public BizException(String exceptionMsg) {
-    	this(RpEnum.ERROR_SYSTEM, exceptionMsg);
+	public BizException(String msg) {
+    	this(RpEnum.ERROR_SYSTEM, msg);
 	}
     
-    public BizException(RpEnum rpEnum, String exceptionMsg, Object ... args) {
+    public BizException(RpEnum rpEnum, String msg, Object ... args) {
         super(null, null, true, false);
-        this.frontCode = rpEnum.getCode();
-        this.message = MessageFormat.format(exceptionMsg, args).replaceAll("\\{\\d+\\}", "");
+        this.code = rpEnum.getCode();
+        this.message = MessageFormat.format(msg, args).replaceAll("\\{\\d+\\}", "");
     }
     
     public BizException(RpEnum rpEnum) {
         super(null, null, true, false);
         this.code = rpEnum.getCode();
-        this.frontCode = rpEnum.getCode();
         this.message = rpEnum.getMsg();
     }
+
+    public static BizException newBizException(String exceptionMsg){
+		return new BizException(exceptionMsg);
+	}
+
+	public static BizException newBizException(RpEnum rpEnum, String exceptionMsg, Object ... args){
+		return new BizException(rpEnum, exceptionMsg, args);
+	}
 
 	/**
 	 * @return the code
@@ -41,18 +47,9 @@ public final class BizException extends RuntimeException {
 	}
 
 	/**
-	 * @return the frontCode
-	 */
-	public Integer getFrontCode() {
-		return frontCode;
-	}
-
-	/**
 	 * @return the message
 	 */
 	public String getMessage() {
 		return message;
 	}
-
-    
 }

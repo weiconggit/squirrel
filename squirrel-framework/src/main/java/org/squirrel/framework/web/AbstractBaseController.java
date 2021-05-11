@@ -183,11 +183,11 @@ public abstract class AbstractBaseController<S extends ServiceImpl<? extends Map
 	protected Rp<V> addImpl(V data){
 		List<ConstraintViolation> validate = validator.validate(data);
 		if (!validate.isEmpty()) {
-			Rp.failed(RpEnum.CUSTOM_MSG, validate.get(0).getMessage());
+			Rp.failed(RpEnum.ERROR_VALIDATE, validate.get(0).getMessage());
 		}
 		String afterValidate = afterValidate(data);
 		if (afterValidate != null) {
-			Rp.failed(RpEnum.CUSTOM_MSG, validate.get(0).getMessage());
+			Rp.failed(RpEnum.ERROR_VALIDATE, validate.get(0).getMessage());
 		}
 		
 		beforeSave(data);
@@ -204,11 +204,11 @@ public abstract class AbstractBaseController<S extends ServiceImpl<? extends Map
 	protected Rp<V> editImpl(String id, V data){
 		List<ConstraintViolation> validate = validator.validate(data);
 		if (!validate.isEmpty()) {
-			return Rp.failed(RpEnum.CUSTOM_MSG, validate.get(0).getMessage());
+			return Rp.failed(RpEnum.ERROR_VALIDATE, validate.get(0).getMessage());
 		}
 		String afterValidate = afterValidate(data);
 		if (afterValidate != null) {
-			return Rp.failed(RpEnum.CUSTOM_MSG, afterValidate);
+			return Rp.failed(RpEnum.ERROR_VALIDATE, afterValidate);
 		}
 		// 比对和本地是否相同，可以重写T的toString、hashCode和equals方法实现
 		V byId = serviceImpl.getById(id);
