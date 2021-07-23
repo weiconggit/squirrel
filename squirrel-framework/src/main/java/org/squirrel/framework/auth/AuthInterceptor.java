@@ -79,7 +79,7 @@ public class AuthInterceptor implements HandlerInterceptor, SquirrelInitializer 
 		String method = request.getMethod();
 		String uri = request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE).toString();
 		String menuId = null;
-		String key = new StringBuilder().append(method).append(uri).toString();
+		String key = method + uri;
 		if (method.equals("GET")) {
 			menuId = RESOURCE_GET.get(key);
 		} else {

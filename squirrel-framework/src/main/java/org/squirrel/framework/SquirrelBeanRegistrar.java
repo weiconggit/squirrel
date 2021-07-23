@@ -52,13 +52,13 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2WebMvc;
  * @time   2021年2月17日 下午6:16:34
  * @version 1.0
  */
-public class BeanRegistrar implements ImportBeanDefinitionRegistrar {
+public class SquirrelBeanRegistrar implements ImportBeanDefinitionRegistrar {
 
-	private static final Logger log = LoggerFactory.getLogger(BeanRegistrar.class);
+	private static final Logger log = LoggerFactory.getLogger(SquirrelBeanRegistrar.class);
 
 	@Override
 	public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
-		String packageName = BeanRegistrar.class.getPackage().getName();
+		String packageName = SquirrelBeanRegistrar.class.getPackage().getName();
 		
 		if (log.isDebugEnabled()) {
 			log.debug("{} Framework scan package is: {}", SquirrelProperties.LOG_SIGN, packageName);
