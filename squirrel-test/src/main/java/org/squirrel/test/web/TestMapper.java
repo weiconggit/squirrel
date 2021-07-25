@@ -1,8 +1,8 @@
 package org.squirrel.test.web;
 
-import org.squirrel.sys.role.Role;
-
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.springframework.stereotype.Repository;
+import org.squirrel.framework.database.BaseDao;
+import org.squirrel.sys.user.UserVO;
 
 /**
  * <p>用户信息 Mapper</p>
@@ -10,6 +10,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * @time   2021-02-08 
  * @version v1
  */
-public interface TestMapper extends BaseMapper<Role> {
+@Repository
+public interface TestMapper extends BaseDao<UserVO> {
 
 }

@@ -1,15 +1,6 @@
 package org.squirrel.sys.user;
 
-import static org.junit.Assert.fail;
-
 import java.time.LocalDateTime;
-import java.util.List;
-
-import org.squirrel.sys.userrole.UserRoleVO;
-
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -27,7 +18,7 @@ import net.sf.oval.constraint.NotNull;
 @ApiModel(value = "用户信息", subTypes = UserVO.class)
 public class User{
 
-	@TableId(type = IdType.ASSIGN_ID)
+//	@TableId(type = IdType.ASSIGN_ID)
 	@ApiModelProperty("ID")
     private Long id;
     

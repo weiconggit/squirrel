@@ -1,8 +1,7 @@
 package org.squirrel.sys.user;
 
 import org.springframework.stereotype.Service;
-
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.squirrel.framework.database.BaseService;
 
 /**
  * <p>用户信息 Service</p>
@@ -11,6 +10,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
  * @version v1
  */
 @Service
-public class UserService extends ServiceImpl<UserMapper, UserVO>{
+//public class UserService implements BaseService<UserVO>{
+	public class UserService{
 	
 }

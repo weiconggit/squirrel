@@ -1,6 +1,7 @@
 package org.squirrel.sys.user;
 
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.springframework.stereotype.Repository;
+import org.squirrel.framework.database.BaseDao;
 
 /**
  * <p>用户信息 Mapper</p>
@@ -8,6 +9,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * @time   2021-02-21 
  * @version v1
  */
-public interface UserMapper extends BaseMapper<UserVO> {
+@Repository
+public interface UserMapper extends BaseDao<UserVO> {
 
 }

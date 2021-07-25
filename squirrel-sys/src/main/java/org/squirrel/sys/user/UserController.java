@@ -1,16 +1,10 @@
 package org.squirrel.sys.user;
 
-import java.util.List;
-
 import javax.annotation.Resource;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.squirrel.framework.response.BizException;
-import org.squirrel.framework.util.ColUtil;
-import org.squirrel.framework.web.AbstractBaseController;
-import org.squirrel.sys.userrole.UserRoleService;
-import org.squirrel.sys.userrole.UserRoleVO;
+import org.squirrel.framework.database.AbstractBaseController;
 
 import io.swagger.annotations.Api;
 
@@ -20,16 +14,17 @@ import io.swagger.annotations.Api;
  * @time   2021-02-21 
  * @version v1
  */
-@Api(tags={"基础服务-用户信息"})
-@RestController
-@RequestMapping(value = "user")
-public class UserController extends AbstractBaseController<UserService, UserVO>{
+//@Api(tags={"基础服务-用户信息"})
+//@RestController
+//@RequestMapping(value = "user")
+//public class UserController extends AbstractBaseController<UserVO>{
+	public class UserController {
 	
-	@Resource
-	private UserRoleService userRoleService;
+//	@Resource
+//	private UserRoleService userRoleService;
 
 
-	@Override
+//	@Override
 	protected void afterSave(UserVO data) {
 //		List<UserRoleVO> voUserRoles = data.getVoUserRoles();
 //		if (ColUtil.isNotEmpty(voUserRoles)) {
