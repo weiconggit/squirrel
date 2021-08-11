@@ -16,16 +16,16 @@ import org.squirrel.framework.response.Rp;
  */
 public interface BaseController<T> {
 		
-	public Rp<T> add(T data);
+	Rp<T> add(T data);
 	
-	public Rp<T> edit(String id, T data);
+	Rp<T> edit(String id, T data);
 	
-	public Rp<T> delete(Set<String> ids);
+	Rp<T> delete(Set<String> ids);
 	
-	public Rp<Collection<T>> list(Map<String, Object> query);
+	Rp<Collection<T>> list(Map<String, Object> query);
 	
-	public Rp<PageVO<T>> page(Map<String, Object> query, String current, String size, String sort) ;
+	Rp<PageVO<T>> page(Map<String, Object> query, String current, String size, String sort) ;
 
-	public Rp<T> detail(String id);
+	Rp<T> detail(String id);
 
 }

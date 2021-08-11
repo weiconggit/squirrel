@@ -38,6 +38,7 @@ import net.sf.oval.Validator;
  * @param <T>
  * @param <T>
  */
+@Deprecated
 public abstract class AbstractBaseController<T> implements BaseController<T>, SquirrelInitializer {
 	
 	private final Logger log = LoggerFactory.getLogger(AbstractBaseController.class);

@@ -13,7 +13,9 @@ public enum RpEnum {
 	ERROR_PARAMETER(2, "参数错误"),
 	ERROR_VALIDATE(3, "校验错误"),
 	NO_AUTHEN(11, "请先登录"),
-	NO_AUTHOR(12, "没有权限");
+	NO_AUTHOR(12, "没有权限"),
+
+	FAILED(-1, "操作失败");
 
 	private final Integer code;
 	private final String msg;

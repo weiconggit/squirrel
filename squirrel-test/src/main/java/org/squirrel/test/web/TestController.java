@@ -38,6 +38,8 @@ public class TestController {
 	private AuthCache authCache;
 	@Resource
 	private TestMapper testMapper;
+	@Resource
+	private TestService testService;
 	
 	@GetMapping("auth")
 	public AuthUser testAuth() {
@@ -61,7 +63,7 @@ public class TestController {
 		} else {
 			param.setWhereSql("where username='" + name + "'");
 		}
-		return testMapper.list(param);
+		return testService.list(param);
 	}
 	@Auth("test2")
 	@GetMapping("alive2/{id}")
