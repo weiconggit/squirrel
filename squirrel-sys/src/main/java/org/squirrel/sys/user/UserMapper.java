@@ -10,6 +10,6 @@ import org.squirrel.framework.database.BaseDao;
  * @version v1
  */
 @Repository
-public interface UserMapper extends BaseDao<UserVO> {
+public interface UserMapper extends BaseDao<UserVO, String> {
 
 }

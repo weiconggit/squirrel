@@ -7,7 +7,7 @@ import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
-import org.squirrel.framework.database.bean.DataHandleParam;
+import org.squirrel.framework.database.bean.DataOpParam;
 
 /**
  * @description mybatis通用Dao
@@ -32,7 +32,7 @@ public interface MybatisBaseDao<T> {
 			+ "${item}"
 			+ "</foreach> "
 			+ "</script>")
-	int insert(@Param("param") DataHandleParam param);
+	int insert(@Param("param") DataOpParam param);
 	
 	/**
 	 * 批量更新
@@ -47,7 +47,7 @@ public interface MybatisBaseDao<T> {
 			+ "</foreach> "
 			+ "${param.whereSql}"
 			+ "</script>")
-	int update(@Param("param") DataHandleParam param);
+	int update(@Param("param") DataOpParam param);
 	
 	/**
 	 * 批量删除
@@ -58,7 +58,7 @@ public interface MybatisBaseDao<T> {
 			+ "DELETE FROM ${param.tableName} "
 			+ "${param.whereSql}"
 			+ "</script>")
-	int delete(@Param("param") DataHandleParam param);
+	int delete(@Param("param") DataOpParam param);
 
 	/**
 	 * 批量查询
@@ -72,6 +72,6 @@ public interface MybatisBaseDao<T> {
 			+ "</foreach> "
 			+ "FROM ${param.tableName} ${param.whereSql}"
 			+ "</script>")
-	List<T> select(@Param("param") DataHandleParam param);
+	List<T> select(@Param("param") DataOpParam param);
 	
 }

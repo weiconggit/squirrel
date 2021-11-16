@@ -33,6 +33,10 @@ public final class Rp<E> implements Serializable {
 	// ~ 对外方法
 	// ======================================================
 
+	public boolean isSuccess(){
+		return this.code >= 0;
+	}
+
 	public static <E> Rp<E> success() {
 		return build(RpEnum.SUCCESS);
 	}

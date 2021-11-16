@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.squirrel.framework.auth.Auth;
 import org.squirrel.framework.auth.AuthCache;
 import org.squirrel.framework.auth.AuthUser;
-import org.squirrel.framework.database.bean.DataHandleParam;
+import org.squirrel.framework.database.bean.DataOpParam;
 import org.squirrel.framework.response.Rp;
 import org.squirrel.sys.user.UserVO;
 
@@ -55,7 +55,7 @@ public class TestController {
 	
 	@GetMapping("test/{name}")
 	public Rp<List<UserVO>> test(@PathVariable String name) {
-		DataHandleParam param = new DataHandleParam();
+		DataOpParam param = new DataOpParam();
 		param.setTableName("user");
 		param.setFeilds(Arrays.asList("phone","username","id"));
 		if (name.equals("1")) {

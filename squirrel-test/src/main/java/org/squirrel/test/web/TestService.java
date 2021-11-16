@@ -8,7 +8,7 @@ import org.squirrel.sys.user.UserVO;
 import javax.annotation.Resource;
 
 @Service
-public class TestService implements BaseService<UserVO> {
+public class TestService implements BaseService<UserVO, String> {
 
     @Resource
     private TestMapper testMapper;

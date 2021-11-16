@@ -3,19 +3,19 @@ package org.squirrel.framework.database.bean;
 import java.util.List;
 
 /**
- * @description 数据处理操作参数
+ * @description 数据操作参数
  * @author weicong
  * @time   2021年7月24日 下午6:39:49
  * @version 1.0
  */
-public class DataHandleParam {
+public class DataOpParam {
 
 	private String tableName;
 	private List<String> feilds;
 	private List<String> values;
 	private String whereSql;
 	
-	public DataHandleParam() {}
+	public DataOpParam() {}
 
 	public final String getTableName() {
 		return tableName;
