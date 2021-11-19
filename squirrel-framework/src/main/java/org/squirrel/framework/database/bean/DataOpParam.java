@@ -11,7 +11,10 @@ import java.util.List;
 public class DataOpParam {
 
 	private String tableName;
+	/** 字段名 */
 	private List<String> feilds;
+
+	/** 字段对应值 */
 	private List<String> values;
 	private String whereSql;
 	

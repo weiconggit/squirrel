@@ -4,10 +4,10 @@ singleServerConfig:
   timeout: 3000
   retryAttempts: 3
   retryInterval: 1500
-  password: ha
+  password: root
   subscriptionsPerConnection: 5
   clientName: null
-  address: "redis://47.108.202.242:6379"
+  address: "redis://127.0.0.1:6379"
   subscriptionConnectionMinimumIdleSize: 1
   subscriptionConnectionPoolSize: 50
   connectionMinimumIdleSize: 32

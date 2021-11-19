@@ -1,6 +1,6 @@
 spring:
    autoconfigure:
-      exclude: 
+      exclude: # 不需要springbott自动注入的可以在这里排除，需要用时，注释掉即可
          # spring-boot-autoconfigure
          - org.springframework.boot.autoconfigure.admin.SpringApplicationAdminJmxAutoConfiguration
          - org.springframework.boot.autoconfigure.aop.AopAutoConfiguration

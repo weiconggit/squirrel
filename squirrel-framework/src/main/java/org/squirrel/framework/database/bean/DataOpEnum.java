@@ -8,10 +8,9 @@ package org.squirrel.framework.database.bean;
  */
 public enum DataOpEnum {
 
-    ADD("add"),
-    EDIT("edit"),
-    REMOVE("delete"),
-    LIST("delete");
+    INSERT("add"),
+    UPDATE("edit"),
+    DELETE("delete");
 
     private String type;
 

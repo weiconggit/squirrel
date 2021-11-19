@@ -32,8 +32,11 @@ public interface MybatisBaseDao<T> {
 			+ "${item}"
 			+ "</foreach> "
 			+ "</script>")
+	int insertBatch(@Param("param") DataOpParam param);
+
+	@Insert("INSERT INTO ${param.tableName} (parm.feilds) VALUES (parm.values)")
 	int insert(@Param("param") DataOpParam param);
-	
+
 	/**
 	 * 批量更新
 	 * @param param
