@@ -1,5 +1,6 @@
 package org.squirrel.framework.database.bean;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -8,17 +9,23 @@ import java.util.List;
  * @time   2021年7月24日 下午6:39:49
  * @version 1.0
  */
-public class DataOpParam {
+public class DataOperatorParam {
 
+	/** 表名 sys_user*/
 	private String tableName;
-	/** 字段名 */
-	private List<String> feilds;
 
-	/** 字段对应值 */
-	private List<String> values;
+	// 新增
+	/** 字段名，插入的部分sql (name1, name2, ...)*/
+	private String insertKeysSql;
+	/** 字段对应多个对象值 */
+	private List<List<Object>> values;
+
+	// 其他
 	private String whereSql;
 	
-	public DataOpParam() {}
+	public DataOperatorParam() {
+		this.values = new ArrayList<>();
+	}
 
 	public final String getTableName() {
 		return tableName;
@@ -36,44 +43,18 @@ public class DataOpParam {
 		this.whereSql = whereSql;
 	}
 
-	public List<String> getFeilds() {
-		return feilds;
+	public String getInsertKeysSql() {
+		return insertKeysSql;
 	}
 
-	public void setFeilds(List<String> feilds) {
-		this.feilds = feilds;
+	public void setInsertKeysSql(String insertKeysSql) {
+		this.insertKeysSql = insertKeysSql;
 	}
 
-	public static class ParamBuilder {
-		
-		private String key;
-		private String value;
-		
-		/**
-		 * @param key
-		 * @param value
-		 */
-		public ParamBuilder(String key, String value) {
-			super();
-			this.key = key;
-			this.value = value;
-		}
-
-		public final String getKey() {
-			return key;
-		}
-
-		public final void setKey(String key) {
-			this.key = key;
-		}
-
-		public final String getValue() {
-			return value;
-		}
-
-		public final void setValue(String value) {
-			this.value = value;
-		}
-		
+	public List<List<Object>> getValues() {
+		return values;
+	}
+	public void setValues(List<List<Object>> values) {
+		this.values = values;
 	}
 }

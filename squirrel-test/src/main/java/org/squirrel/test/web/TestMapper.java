@@ -11,6 +11,6 @@ import org.squirrel.sys.user.UserVO;
  * @version v1
  */
 @Repository
-public interface TestMapper extends BaseDao<UserVO, String> {
+public interface TestMapper extends BaseDao<UserVO> {
 
 }

@@ -34,9 +34,9 @@ public class User{
 	@Length(min = 1, max = 64)
     private String password;
     
-	@ApiModelProperty("昵称")
-	@MaxLength(value = 32)
-    private String nickname;
+//	@ApiModelProperty("昵称")
+//	@MaxLength(value = 32)
+//    private String nickname;
     
 	@ApiModelProperty("电话号码")
 	@MaxLength(value = 16)
@@ -46,26 +46,26 @@ public class User{
 	@MaxLength(value = 255)
     private String head;
     
-	@ApiModelProperty("微信openid")
-	@MaxLength(value = 32)
-    private String wxOpenid;
-    
-	@ApiModelProperty("qq openid")
-	@MaxLength(value = 32)
-    private String qqOpenid;
+//	@ApiModelProperty("微信openid")
+//	@MaxLength(value = 32)
+//    private String wxOpenid;
+//
+//	@ApiModelProperty("qq openid")
+//	@MaxLength(value = 32)
+//    private String qqOpenid;
     
 	@ApiModelProperty("删除标识，0：正常，1：删除")
     private Boolean isdel;
     
-	@ApiModelProperty("创建者")
-	@MaxLength(value = 32)
-    private String creator;
+//	@ApiModelProperty("创建者")
+//	@MaxLength(value = 32)
+//    private String creator;
     
-	@ApiModelProperty("创建时间")
-    private LocalDateTime createTime;
-    
-	@ApiModelProperty("更新时间")
-    private LocalDateTime updateTime;
+//	@ApiModelProperty("创建时间")
+//    private LocalDateTime createTime;
+//
+//	@ApiModelProperty("更新时间")
+//    private LocalDateTime updateTime;
     
 
 	/**
@@ -120,17 +120,17 @@ public class User{
 	 * set 昵称
 	 * @return User
 	 */
-	public User setNickname(String nickname){
-		this.nickname = nickname;
-		return this;
-	}
-	/**
-	 * get 昵称
-	 * @return User
-	 */
-	public String getNickname(){
-		return this.nickname;
-	}
+//	public User setNickname(String nickname){
+//		this.nickname = nickname;
+//		return this;
+//	}
+//	/**
+//	 * get 昵称
+//	 * @return User
+//	 */
+//	public String getNickname(){
+//		return this.nickname;
+//	}
 	
 	/**
 	 * set 电话号码
@@ -168,33 +168,33 @@ public class User{
 	 * set 微信openid
 	 * @return User
 	 */
-	public User setWxOpenid(String wxOpenid){
-		this.wxOpenid = wxOpenid;
-		return this;
-	}
-	/**
-	 * get 微信openid
-	 * @return User
-	 */
-	public String getWxOpenid(){
-		return this.wxOpenid;
-	}
-	
-	/**
-	 * set qq openid
-	 * @return User
-	 */
-	public User setQqOpenid(String qqOpenid){
-		this.qqOpenid = qqOpenid;
-		return this;
-	}
-	/**
-	 * get qq openid
-	 * @return User
-	 */
-	public String getQqOpenid(){
-		return this.qqOpenid;
-	}
+//	public User setWxOpenid(String wxOpenid){
+//		this.wxOpenid = wxOpenid;
+//		return this;
+//	}
+//	/**
+//	 * get 微信openid
+//	 * @return User
+//	 */
+//	public String getWxOpenid(){
+//		return this.wxOpenid;
+//	}
+//
+//	/**
+//	 * set qq openid
+//	 * @return User
+//	 */
+//	public User setQqOpenid(String qqOpenid){
+//		this.qqOpenid = qqOpenid;
+//		return this;
+//	}
+//	/**
+//	 * get qq openid
+//	 * @return User
+//	 */
+//	public String getQqOpenid(){
+//		return this.qqOpenid;
+//	}
 	
 	/**
 	 * set 删除标识，0：正常，1：删除
@@ -216,50 +216,50 @@ public class User{
 	 * set 创建者
 	 * @return User
 	 */
-	public User setCreator(String creator){
-		this.creator = creator;
-		return this;
-	}
-	/**
-	 * get 创建者
-	 * @return User
-	 */
-	public String getCreator(){
-		return this.creator;
-	}
+//	public User setCreator(String creator){
+//		this.creator = creator;
+//		return this;
+//	}
+//	/**
+//	 * get 创建者
+//	 * @return User
+//	 */
+//	public String getCreator(){
+//		return this.creator;
+//	}
 	
 	/**
 	 * set 创建时间
 	 * @return User
 	 */
-	public User setCreateTime(LocalDateTime createTime){
-		this.createTime = createTime;
-		return this;
-	}
-	/**
-	 * get 创建时间
-	 * @return User
-	 */
-	public LocalDateTime getCreateTime(){
-		return this.createTime;
-	}
-	
-	/**
-	 * set 更新时间
-	 * @return User
-	 */
-	public User setUpdateTime(LocalDateTime updateTime){
-		this.updateTime = updateTime;
-		return this;
-	}
-	/**
-	 * get 更新时间
-	 * @return User
-	 */
-	public LocalDateTime getUpdateTime(){
-		return this.updateTime;
-	}
-	
+//	public User setCreateTime(LocalDateTime createTime){
+//		this.createTime = createTime;
+//		return this;
+//	}
+//	/**
+//	 * get 创建时间
+//	 * @return User
+//	 */
+//	public LocalDateTime getCreateTime(){
+//		return this.createTime;
+//	}
+//
+//	/**
+//	 * set 更新时间
+//	 * @return User
+//	 */
+//	public User setUpdateTime(LocalDateTime updateTime){
+//		this.updateTime = updateTime;
+//		return this;
+//	}
+//	/**
+//	 * get 更新时间
+//	 * @return User
+//	 */
+//	public LocalDateTime getUpdateTime(){
+//		return this.updateTime;
+//	}
+//
 	@Override
 	public String toString(){
 		StringBuilder sb =new StringBuilder();
@@ -267,15 +267,15 @@ public class User{
 		sb.append(", id="+this.getId());
 		sb.append(", username="+this.getUsername());
 		sb.append(", password="+this.getPassword());
-		sb.append(", nickname="+this.getNickname());
+//		sb.append(", nickname="+this.getNickname());
 		sb.append(", phone="+this.getPhone());
 		sb.append(", head="+this.getHead());
-		sb.append(", wxOpenid="+this.getWxOpenid());
-		sb.append(", qqOpenid="+this.getQqOpenid());
+//		sb.append(", wxOpenid="+this.getWxOpenid());
+//		sb.append(", qqOpenid="+this.getQqOpenid());
 		sb.append(", isdel="+this.getIsdel());
-		sb.append(", creator="+this.getCreator());
-		sb.append(", createTime="+this.getCreateTime());
-		sb.append(", updateTime="+this.getUpdateTime());
+//		sb.append(", creator="+this.getCreator());
+//		sb.append(", createTime="+this.getCreateTime());
+//		sb.append(", updateTime="+this.getUpdateTime());
 		sb.append("]");
 		return sb.toString();
 	}

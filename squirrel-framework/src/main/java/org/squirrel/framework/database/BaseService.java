@@ -1,85 +1,85 @@
 package org.squirrel.framework.database;
 
-import java.util.*;
-
-import org.squirrel.framework.database.bean.DataOpEnum;
-import org.squirrel.framework.database.bean.DataOpParam;
+import org.springframework.transaction.annotation.Transactional;
+import org.squirrel.framework.database.bean.DataOperatorEnum;
 import org.squirrel.framework.response.Rp;
 
-public interface BaseService<T, I> {
+import java.util.*;
 
-	BaseDao<T, I> getDao();
+public interface BaseService<T> extends DataOperator<T> {
 
-	default Rp<T> insert(T t){
-		return this.insert(Arrays.asList(t));
-	}
+	BaseDao<T> getDao();
 
-	default Rp<T> insert(List<T> list) {
+	@Transactional
+	@Override
+	default Rp<T> add(T t){
+		List<T> list = new ArrayList<>();
+		list.add(t);
 		beforeAdd(list);
-		DataOpParam param = new DataOpParam();
-		Rp<T> add = getDao().add(param);
+		Rp<T> add = getDao().add(t);
 		if (add.isSuccess()){
 			afterAdd(list);
-			afterChange(DataOpEnum.INSERT, list);
+			afterChange(DataOperatorEnum.INSERT, list);
 		}
 		return add;
 	}
 
-	default Rp<T> update(T t){
-		return this.update(Arrays.asList(t));
+	@Transactional
+	@Override
+	default Rp<T> add(List<T> list){
+		beforeAdd(list);
+		Rp<T> add = getDao().add(list);
+		if (add.isSuccess()){
+			afterAdd(list);
+			afterChange(DataOperatorEnum.INSERT, list);
+		}
+		return add;
 	}
 
-	default Rp<T> update(List<T> list) {
+	@Transactional
+	@Override
+	default Rp<T> edit(String id, T t){
+		List<T> list = new ArrayList<>();
+		list.add(t);
 		beforeEdit(list);
-		DataOpParam param = new DataOpParam();
-		Rp<T> edit = getDao().edit(param);
+		Rp<T> edit = getDao().edit(id, t);
 		if (edit.isSuccess()){
 			afterEdit(list);
-			afterChange(DataOpEnum.UPDATE, list);
+			afterChange(DataOperatorEnum.UPDATE, list);
 		}
 		return edit;
 	}
 
-	default Rp<T> delete(Set<String> ids) {
-		DataOpParam param = new DataOpParam();
-		List<T> list = beforeRemove(param);
-		Rp<T> remove = getDao().remove(param);
+	@Transactional
+	@Override
+	default Rp<T> remove(Set<String> ids){
+		List<T> list = beforeRemove(ids);
+		Rp<T> remove = getDao().remove(ids);
 		if (remove.isSuccess()){
 			afterRemove(list);
-			afterChange(DataOpEnum.DELETE, list);
+			afterChange(DataOperatorEnum.DELETE, list);
 		}
 		return remove;
 	}
 
-	default Rp<T> delete(Map<String, String> query) {
-		DataOpParam param = new DataOpParam();
-		List<T> list = beforeRemove(param);
-		Rp<T> remove = getDao().remove(param);
-		if (remove.isSuccess()){
-			afterRemove(list);
-			afterChange(DataOpEnum.DELETE, list);
-		}
-		return remove;
-	}
-
-	default Rp<List<T>> list(Map<String, String> query) {
-		DataOpParam param = new DataOpParam();
-		beforeList(param);
-		Rp<List<T>> list = getDao().list(param);
+	@Override
+	default Rp<List<T>> list(Map<String, Object> query){
+		beforeList(query);
+		Rp<List<T>> list = getDao().list(query);
 		if (list.isSuccess()){
 			afterList(list.getData());
 		}
 		return list;
 	}
 
-	default void afterChange(DataOpEnum dataOpEnum, List<T> list){};
+	default void afterChange(DataOperatorEnum dataOpEnum, List<T> list){};
 	default void beforeAdd(List<T> list){};
 	default void afterAdd(List<T> list){};
 	default void beforeEdit(List<T> list){};
 	default void afterEdit(List<T> list){};
-	default List<T> beforeRemove(DataOpParam param){ return Collections.emptyList(); };
+	default List<T> beforeRemove(Set<String> ids){ return Collections.emptyList(); };
 	default void afterRemove(List<T> list){};
-	default void beforeList(DataOpParam param){};
+	default void beforeList(Map<String, Object> query){};
 	default void afterList(List<T> list){};
 
 }

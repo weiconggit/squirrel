@@ -15,12 +15,8 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 @SpringBootApplication
 public class SquirrelTestApp {
 
-//	public static void main(String[] args) throws JsonProcessingException {
-//		SpringApplication.run(SquirrelTestApp.class, args);
-//	}
-
-	public static void main(String[] args) {
-		ApplicationContext context = new ClassPathXmlApplicationContext("application.yml", "application-exclude-factories.yml");
-		context.getBean()
+	public static void main(String[] args) throws JsonProcessingException {
+		SpringApplication.run(SquirrelTestApp.class, args);
 	}
+
 }

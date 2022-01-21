@@ -6,7 +6,7 @@ package org.squirrel.framework.database.bean;
  * @time   2021年11月16日
  * @version 1.0
  */
-public enum DataOpEnum {
+public enum DataOperatorEnum {
 
     INSERT("add"),
     UPDATE("edit"),
@@ -14,7 +14,7 @@ public enum DataOpEnum {
 
     private String type;
 
-    DataOpEnum(String type){
+    DataOperatorEnum(String type){
         this.type = type;
     }
 }

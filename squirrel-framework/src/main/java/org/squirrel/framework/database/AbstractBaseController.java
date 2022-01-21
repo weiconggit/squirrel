@@ -2,7 +2,6 @@ package org.squirrel.framework.database;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,7 +9,6 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -38,8 +36,7 @@ import net.sf.oval.Validator;
  * @param <T>
  * @param <T>
  */
-@Deprecated
-public abstract class AbstractBaseController<T> implements BaseController<T>, SquirrelInitializer {
+public abstract class AbstractBaseController<T> implements DataOperator<T>, SquirrelInitializer {
 	
 	private final Logger log = LoggerFactory.getLogger(AbstractBaseController.class);
 	
@@ -60,171 +57,115 @@ public abstract class AbstractBaseController<T> implements BaseController<T>, Sq
 	 * 当前实体对应VO类型
 	 */
 	private Class<T> classVO;
-	
-	protected BaseService baseService;
-	
+	/**
+	 * oval检验
+	 */
 	private Validator validator;
-	
+
+	public abstract BaseService<T> getService();
+
 	@SuppressWarnings("unchecked")
 	@Override
 	public final void init() {
 		// 可放入无参构造中先行执行
 		Type[] actualTypeArguments = ((ParameterizedType) this.getClass().getGenericSuperclass()).getActualTypeArguments();
-		this.classVO = (Class<T>) actualTypeArguments[1]; 
+		this.classVO = (Class<T>) actualTypeArguments[0];
 		// 需等待 ApplicationContextHelper创建之后
-//		this.baseService = ApplicationContextHelper.getBean(StrUtil.lowerFirstLetter(classService.getSimpleName()));
 		this.validator = ApplicationContextHelper.getBean(Validator.class);
 	}
-	
-	
-	
-	// ~ common api
-	// ================================================
-	
-//	@Auth(AuthMenuLoader.GET)
-//	@ApiOperation(value = "获取列表信息")
-//	@GetMapping(value = LIST)
-//	@Override
-//	public Rp<Collection<V>> list(@RequestParam(name = "query", required = false) Map<String, Object> query) {
-//		return listImpl(query);
-//	}
-//	
-//	@Auth(AuthMenuLoader.GET)
-//	@ApiOperation(value = "获取分页信息")
-//	@GetMapping(value = PAGE)
-//	@Override
-//	public Rp<Page<V>> page(@RequestParam(name = "query", required = false) Map<String, Object> query
-//			, @RequestParam(value = "current") String current, @RequestParam(value = "size") String size, @RequestParam(value = "sort", required = false) String sort) {
-//		return pageImpl(query, current, size, sort);
-//	}
-//	
-//	@Auth(AuthMenuLoader.GET)
-//	@ApiOperation(value = "获取详情信息")
-//	@GetMapping(value = DETAIL)
-//	@Override
-//	public Rp<V> detail(@PathVariable(value = "id") String id) {
-//		return detailImpl(id);
-//	}
-//
-//	@Auth(AuthMenuLoader.ADD)
-//	@ApiOperation(value = "新增信息")
-//	@PostMapping(value = ADD)
-//	@Override
-//	public Rp<V> add(@RequestBody V data) {
-//		return addImpl(data);
-//	}
-//
-//	@Auth(AuthMenuLoader.EDIT)
-//	@ApiOperation(value = "修改信息")
-//	@PutMapping(value = EDIT)
-//	@Override
-//	public Rp<V> edit(@PathVariable(value = "id") String id, @RequestBody V data) {
-//		return editImpl(id, data);
-//	}
-//	
-//	@Auth(AuthMenuLoader.DEL)
-//	@ApiOperation(value = "删除信息")
-//	@DeleteMapping(value = DEL)
-//	@Override
-//	public Rp<V> delete(@PathVariable(value = "ids") Set<String> ids) {
-//		return deleteImpl(ids);
-//	}
 
-	
-	
-	// ~ custom impl
-	// ================================================
-	
-//	protected Rp<Collection<V>> listImpl(Map<String, Object> query){
-//		if (query == null) {
-//			query = new HashMap<>();
-//			query.put(ISDEL, false);
-//		} 
-//		query.put(ISDEL, false);
-//		Collection<V> listByMap = serviceImpl.listByMap(query);
-//		return Rp.success(listByMap);
-//	}
-//	
-//	protected Rp<Page<V>> pageImpl(Map<String, Object> query, String current, String size, String sort){
-//		Page<V> page = createPage(current, size, sort);
-//		QueryWrapper<V> queryWrapper = new QueryWrapper<>();
-//		queryWrapper.eq(ISDEL, false);
-//		Page<V> result = null;
-//		if (query == null || query.isEmpty()) {
-//			result = serviceImpl.page(page, queryWrapper); // mysql tinyint 1 true, 0 false
-//		} else {
-//			query.entrySet().forEach(v -> queryWrapper.like(v.getKey(), v.getValue()));
-//			result = serviceImpl.page(page, queryWrapper);
-//		}
-//		return Rp.success(result);
-//	}
-//	
-//	protected Rp<V> detailImpl(String id){
-//		return Rp.success(serviceImpl.getById(id));
-//	}
-//	
-//	@Transactional
-//	protected Rp<V> addImpl(V data){
-//		List<ConstraintViolation> validate = validator.validate(data);
+	@Deprecated
+	@Auth(AuthMenuLoader.ADD)
+	@ApiOperation(value = "新增批量")
+	@PostMapping(value = "addba")
+	@Override
+	public Rp<T> add(@RequestBody List<T> t) {
+//		List<ConstraintViolation> validate = validator.validate(t);
 //		if (!validate.isEmpty()) {
 //			Rp.failed(RpEnum.ERROR_VALIDATE, validate.get(0).getMessage());
 //		}
-//		String afterValidate = afterValidate(data);
+//		String afterValidate = afterValidate(t);
 //		if (afterValidate != null) {
 //			Rp.failed(RpEnum.ERROR_VALIDATE, validate.get(0).getMessage());
 //		}
-//		
-//		beforeSave(data);
-////		(clazzTable)data;
-//		boolean save = serviceImpl.save(data);
-//		if (save) {
-//			afterSave(data);
-//			return Rp.success();
-//		}
-//		return Rp.failed(RpEnum.ERROR_SYSTEM);
-//	}
-//	
-//	@Transactional
-//	protected Rp<V> editImpl(String id, V data){
-//		List<ConstraintViolation> validate = validator.validate(data);
-//		if (!validate.isEmpty()) {
-//			return Rp.failed(RpEnum.ERROR_VALIDATE, validate.get(0).getMessage());
-//		}
-//		String afterValidate = afterValidate(data);
-//		if (afterValidate != null) {
-//			return Rp.failed(RpEnum.ERROR_VALIDATE, afterValidate);
-//		}
-//		// 比对和本地是否相同，可以重写T的toString、hashCode和equals方法实现
-//		V byId = serviceImpl.getById(id);
-//		if (StrUtil.equals(byId.toString(), data.toString())) {
-//			return Rp.success(); // 没有任何修改直接返回即可
-//		}
-//		
-//		beforeUpdate(data);
-//		boolean updateById = serviceImpl.updateById(data);
-//		if (updateById) {
-//			afterUpdate(data);
-//			return Rp.success();
-//		}
-//		return Rp.failed(RpEnum.ERROR_SYSTEM);
-//	}
-//
-//	@Transactional
-//	protected Rp<V> deleteImpl(Set<String> ids) {
-//		UpdateWrapper<V> updateWrapper = new UpdateWrapper<>();
-//		ids.forEach(id -> updateWrapper.eq("id", id).or());
-//		updateWrapper.set(ISDEL, true);
-//		
-//		beforeDel(ids);
-//		boolean update = serviceImpl.update(updateWrapper);
-//		if (update) {
-//			afterDel(ids);
-//			return Rp.success();
-//		}
-//		return Rp.failed(RpEnum.ERROR_SYSTEM);
-//	}
-	
-	
+//		beforeSave(t);
+		Rp<T> add = getService().add(t);
+		if (add.isSuccess()) {
+//			afterSave(t);
+			return Rp.success();
+		}
+		return add;
+	}
+
+	@Auth(AuthMenuLoader.ADD)
+	@ApiOperation(value = "新增")
+	@PostMapping(value = ADD)
+	@Override
+	public Rp<T> add(@RequestBody T t) {
+		List<ConstraintViolation> validate = validator.validate(t);
+		if (!validate.isEmpty()) {
+			Rp.failed(RpEnum.ERROR_VALIDATE, validate.get(0).getMessage());
+		}
+		String afterValidate = afterValidate(t);
+		if (afterValidate != null) {
+			Rp.failed(RpEnum.ERROR_VALIDATE, validate.get(0).getMessage());
+		}
+		beforeSave(t);
+		Rp<T> add = getService().add(t);
+		if (add.isSuccess()) {
+			afterSave(t);
+			return Rp.success();
+		}
+		return add;
+	}
+
+	@Auth(AuthMenuLoader.EDIT)
+	@ApiOperation(value = "修改")
+	@PutMapping(value = EDIT)
+	@Override
+	public Rp<T> edit(@PathVariable(value = "id") String id, @RequestBody T t) {
+		List<ConstraintViolation> validate = validator.validate(t);
+		if (!validate.isEmpty()) {
+			return Rp.failed(RpEnum.ERROR_VALIDATE, validate.get(0).getMessage());
+		}
+		String afterValidate = afterValidate(t);
+		if (afterValidate != null) {
+			return Rp.failed(RpEnum.ERROR_VALIDATE, afterValidate);
+		}
+		beforeUpdate(t);
+		Rp<T> edit = getService().edit(id, t);
+		if (edit.isSuccess()) {
+			afterUpdate(t);
+			return Rp.success();
+		}
+		return edit;
+	}
+
+	@Auth(AuthMenuLoader.DEL)
+	@ApiOperation(value = "删除")
+	@DeleteMapping(value = DEL)
+	@Override
+	public Rp<T> remove(@PathVariable(value = "ids") Set<String> ids) {
+		beforeDel(ids);
+		Rp<T> remove = getService().remove(ids);
+		if (remove.isSuccess()) {
+			afterDel(ids);
+			return Rp.success();
+		}
+		return remove;
+	}
+
+	@Auth(AuthMenuLoader.GET)
+	@ApiOperation(value = "获取列表")
+	@GetMapping(value = LIST)
+	@Override
+	public Rp<List<T>> list(@RequestParam(name = "query", required = false) Map<String, Object> query) {
+		if (query == null) {
+			query = new HashMap<>();
+		}
+		query.put(ISDEL, false);
+		return getService().list(query);
+	}
 	
 	protected String afterValidate(T data) {
 		return null;
@@ -241,32 +182,5 @@ public abstract class AbstractBaseController<T> implements BaseController<T>, Sq
 	protected void beforeDel(Set<String> ids) {}
 	
 	protected void afterDel(Set<String> ids) {}
-	
-	
-	
-	// ~ util
-	// ================================================
-	
-	/**
-	 * 创建分页及排序
-	 * @param current
-	 * @param size
-	 * @param sort 规则：asc,字段1,字段2
-	 * @return
-	 */
-//	protected Page<V> createPage(String current, String size,  String sort) {
-//		Page<V> page = new Page<>(Long.parseLong(current), Long.parseLong(size));
-//		if (StrUtil.isNotEmpty(sort)) {
-//			String[] sortAndFields = sort.split(",", 2);
-//			List<OrderItem> orderItems = null;
-//			if (StrUtil.equals(sortAndFields[0], DESC)) {
-//				orderItems = OrderItem.descs(sortAndFields[1].split(","));
-//			} else {
-//				orderItems = OrderItem.ascs(sortAndFields[1].split(","));
-//			}
-//			page.setOrders(orderItems);
-//		}
-//		return page;
-//	}
 	
 }

@@ -26,7 +26,33 @@ public final class StrUtil {
 	public static boolean isEmpty(String string) {
 		return string == null || string.length() == 0;
 	}
-	
+
+	/**
+	 * 驼峰转下划线
+	 * 示例：sysUser 或 SysUser => sys_user
+	 * @param string
+	 * @return
+	 */
+	public static String humpToUnderLine(String string){
+		if (isEmpty(string)) {
+			return string;
+		}
+		StringBuilder stringBuilder = new StringBuilder();
+		char[] chars = string.toCharArray();
+		for (int i = 0, size = chars.length; i < size; i++) {
+			if (i == 0) {
+				stringBuilder.append(Character.toLowerCase(chars[i]));
+			} else {
+				if (Character.isUpperCase(chars[i])) {
+					stringBuilder.append("_").append(Character.toLowerCase(chars[i]));
+				} else {
+					stringBuilder.append(chars[i]);
+				}
+			}
+		}
+		return stringBuilder.toString();
+	}
+
 	public static String lowerFirstLetter(String string) {
 		if (isEmpty(string)) {
 			return string;

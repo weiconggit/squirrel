@@ -1,6 +1,10 @@
 package org.squirrel.test.web;
 
+import org.squirrel.sys.user.User;
+
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -17,7 +21,7 @@ public class TestMain {
 
 	private static final Map<String, String> map = new HashMap<>();
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) throws InvocationTargetException, IllegalAccessException {
 		System.out.println(TestMain.class.getPackage().getName());
 		
 //		String pa = "(https|http)://[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]";
@@ -47,10 +51,12 @@ public class TestMain {
 //		}
 //		System.err.println("完成");
 		
-//		SysUser sysUser = new SysUser();
-//		sysUser.setUsername("haha");
-//		sysUser.setPhone("13600");
-//		Field[] declaredFields = sysUser.getClass().getDeclaredFields();
+		User sysUser = new User();
+		sysUser.setUsername("haha");
+		sysUser.setPhone("13600");
+		System.out.println(sysUser.getClass().getName());
+		System.out.println(sysUser.getClass().getSimpleName());
+		Field[] declaredFields = sysUser.getClass().getDeclaredFields();
 //		for (Field field : declaredFields) {
 //			field.setAccessible(true);
 //			System.out.println(field.getName());
@@ -62,8 +68,16 @@ public class TestMain {
 //			}
 //			System.out.println("================");
 //		}
-		
-		
+		// method invoke 方式效率较低
+//		Method[] declaredMethods = sysUser.getClass().getDeclaredMethods();
+//		for (Method me: declaredMethods) {
+//			if (me.getName().startsWith("get")){
+//				System.out.println(me.getName());
+//				Object invoke = me.invoke(sysUser);
+//				System.out.println(invoke);
+//			}
+//		}
+
 //		BeanInfo beanInfo = null;
 //		try {
 //			beanInfo = Introspector.getBeanInfo(sysUser.getClass());

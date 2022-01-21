@@ -1,8 +1,5 @@
 package org.squirrel.test.web;
 
-import java.util.Arrays;
-import java.util.List;
-
 import javax.annotation.Resource;
 
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,9 +10,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.squirrel.framework.auth.Auth;
 import org.squirrel.framework.auth.AuthCache;
 import org.squirrel.framework.auth.AuthUser;
-import org.squirrel.framework.database.bean.DataOpParam;
-import org.squirrel.framework.response.Rp;
-import org.squirrel.sys.user.UserVO;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -53,18 +47,18 @@ public class TestController {
 		return "test api";
 	}
 	
-	@GetMapping("test/{name}")
-	public Rp<List<UserVO>> test(@PathVariable String name) {
-		DataOpParam param = new DataOpParam();
-		param.setTableName("user");
-		param.setFeilds(Arrays.asList("phone","username","id"));
-		if (name.equals("1")) {
-			param.setWhereSql("");
-		} else {
-			param.setWhereSql("where username='" + name + "'");
-		}
-		return testService.list(param);
-	}
+//	@GetMapping("test/{name}")
+//	public Rp<List<UserVO>> test(@PathVariable String name) {
+//		DataOpParam param = new DataOpParam();
+//		param.setTableName("user");
+//		param.setFeilds(Arrays.asList("phone","username","id"));
+//		if (name.equals("1")) {
+//			param.setWhereSql("");
+//		} else {
+//			param.setWhereSql("where username='" + name + "'");
+//		}
+//		return testService.list(param);
+//	}
 	@Auth("test2")
 	@GetMapping("alive2/{id}")
 	public String test2(@PathVariable String id) {

@@ -14,19 +14,19 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * @description 数据操作参数生成
+ * @description 数据参数工厂
  * @author weicong
  * @time   2022年1月20日
  * @version 1.0
  */
-public final class DataParamFactory {
+public final class DataOperatorParamFactory {
 
-    private static final Logger log = LoggerFactory.getLogger(DataParamFactory.class);
+    private static final Logger log = LoggerFactory.getLogger(DataOperatorParamFactory.class);
 
     /** 实体字段信息缓存 */
     private static final Map<String, BeanSqlCache> beanSqlCacheMap = new ConcurrentHashMap<>();
 
-    private DataParamFactory(){}
+    private DataOperatorParamFactory(){}
 
     /**
      * 创建DataOperatorParam对象
@@ -68,6 +68,7 @@ public final class DataParamFactory {
         param.setTableName(beanSqlCache.getTableName());
         param.setInsertKeysSql(beanSqlCache.getInsertKeysSql());
         try {
+            // TODO isdel 字段的特殊处理
             for (T t : list) {
                 List<Object> oneObjVals = new ArrayList<>();
                 for (Field field : fields) {

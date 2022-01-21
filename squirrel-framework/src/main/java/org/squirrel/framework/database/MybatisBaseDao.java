@@ -7,7 +7,7 @@ import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
-import org.squirrel.framework.database.bean.DataOpParam;
+import org.squirrel.framework.database.bean.DataOperatorParam;
 
 /**
  * @description mybatis通用Dao
@@ -16,26 +16,22 @@ import org.squirrel.framework.database.bean.DataOpParam;
  * @version 1.0
  */
 public interface MybatisBaseDao<T> {
-	
+
 	/**
-	 * 批量插入
+	 * 单条或批量插入
 	 * @param param
 	 * @return
 	 */
 	@Insert("<script>"
-			+ "INSERT INTO ${param.tableName} "
-			+ "<foreach item=\"item\" collection=\"param.feilds\" separator=\",\" open=\"(\" close=\")\" index=\"\">"
-			+ "${item}"
-			+ "</foreach> "
+			+ "INSERT INTO ${param.tableName} ${param.insertKeysSql} "
 			+ "VALUES "
-			+ "<foreach item=\"item\" collection=\"param.values\" separator=\",\" open=\"(\" close=\")\" index=\"\">"
-			+ "${item}"
+			+ "<foreach item=\"itemList\" collection=\"param.values\" separator=\",\" open=\"\" close=\"\" index=\"\">"
+			+ "<foreach item=\"item\" collection=\"itemList\" separator=\",\" open=\"(\" close=\")\" index=\"\">"
+			+ "#{item}"
+			+ "</foreach>"
 			+ "</foreach> "
 			+ "</script>")
-	int insertBatch(@Param("param") DataOpParam param);
-
-	@Insert("INSERT INTO ${param.tableName} (parm.feilds) VALUES (parm.values)")
-	int insert(@Param("param") DataOpParam param);
+	int insert(@Param("param") DataOperatorParam param);
 
 	/**
 	 * 批量更新
@@ -50,8 +46,8 @@ public interface MybatisBaseDao<T> {
 			+ "</foreach> "
 			+ "${param.whereSql}"
 			+ "</script>")
-	int update(@Param("param") DataOpParam param);
-	
+	int update(@Param("param") DataOperatorParam param);
+
 	/**
 	 * 批量删除
 	 * @param param
@@ -61,7 +57,7 @@ public interface MybatisBaseDao<T> {
 			+ "DELETE FROM ${param.tableName} "
 			+ "${param.whereSql}"
 			+ "</script>")
-	int delete(@Param("param") DataOpParam param);
+	int delete(@Param("param") DataOperatorParam param);
 
 	/**
 	 * 批量查询
@@ -75,6 +71,6 @@ public interface MybatisBaseDao<T> {
 			+ "</foreach> "
 			+ "FROM ${param.tableName} ${param.whereSql}"
 			+ "</script>")
-	List<T> select(@Param("param") DataOpParam param);
+	List<T> select(@Param("param") DataOperatorParam param);
 	
 }
