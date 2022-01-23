@@ -47,6 +47,20 @@ public interface MybatisBaseDao<T> {
 			+ "${param.whereSql}"
 			+ "</script>")
 	int update(@Param("param") DataOperatorParam param);
+	
+//	<update id="updatePinyin">
+//	  UPDATE sys_region_continents
+//	  SET C_NAME_PINYIN =
+//	  <foreach collection="idNames" index="index" item="item"
+//	           open="CASE ID" separator=" " close="END">
+//	    WHEN #{item.id} THEN #{item.pinyin}
+//	  </foreach>
+//	  WHERE ID IN
+//	  <foreach collection="idNames" index="index" item="item"
+//	           open="(" separator="," close=")">
+//	    #{item.id,jdbcType=BIGINT}
+//	  </foreach>
+//	</update>
 
 	/**
 	 * 批量删除

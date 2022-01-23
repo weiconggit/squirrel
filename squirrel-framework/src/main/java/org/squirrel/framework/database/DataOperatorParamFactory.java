@@ -83,10 +83,15 @@ public final class DataOperatorParamFactory {
         return  param;
     }
 
-    /***
-     * 实体信息及部分ssql缓存
+
+    /**
+     * @description 实体信息及部分sql缓存
+     * @author weicong
+     * @time   2022年1月23日
+     * @version 1.0
      */
     private static class BeanSqlCache {
+    	
         private final String tableName; // sys_user
         private final Field[] fields; // 实体对象的字段信息
 
@@ -109,7 +114,13 @@ public final class DataOperatorParamFactory {
         }
     }
 
-    public static class ParamBuilder {
+    /**
+     * @description 参数构建
+     * @author weicong
+     * @time   2022年1月23日 下午5:11:13
+     * @version 1.0
+     */
+    private static class ParamBuilder {
 
         private String key;
         private String value;
@@ -139,6 +150,5 @@ public final class DataOperatorParamFactory {
         public final void setValue(String value) {
             this.value = value;
         }
-
     }
 }

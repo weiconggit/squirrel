@@ -1,16 +1,18 @@
 package org.squirrel.framework.database;
 
-import org.springframework.transaction.annotation.Transactional;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.squirrel.framework.database.bean.DataOperatorEnum;
 import org.squirrel.framework.response.Rp;
-
-import java.util.*;
 
 public interface BaseService<T> extends DataOperator<T> {
 
 	BaseDao<T> getDao();
 
-	@Transactional
 	@Override
 	default Rp<T> add(T t){
 		List<T> list = new ArrayList<>();
@@ -24,7 +26,6 @@ public interface BaseService<T> extends DataOperator<T> {
 		return add;
 	}
 
-	@Transactional
 	@Override
 	default Rp<T> add(List<T> list){
 		beforeAdd(list);
@@ -36,21 +37,18 @@ public interface BaseService<T> extends DataOperator<T> {
 		return add;
 	}
 
-	@Transactional
 	@Override
 	default Rp<T> edit(String id, T t){
-		List<T> list = new ArrayList<>();
-		list.add(t);
-		beforeEdit(list);
+		List<T> singletonList = Collections.singletonList(t);
+		beforeEdit(singletonList);
 		Rp<T> edit = getDao().edit(id, t);
 		if (edit.isSuccess()){
-			afterEdit(list);
-			afterChange(DataOperatorEnum.UPDATE, list);
+			afterEdit(singletonList);
+			afterChange(DataOperatorEnum.UPDATE, singletonList);
 		}
 		return edit;
 	}
 
-	@Transactional
 	@Override
 	default Rp<T> remove(Set<String> ids){
 		List<T> list = beforeRemove(ids);

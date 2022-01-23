@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.springframework.transaction.annotation.Transactional;
 import org.squirrel.framework.database.bean.DataOperatorParam;
 import org.squirrel.framework.response.Rp;
 import org.squirrel.framework.response.RpEnum;
@@ -16,6 +17,7 @@ import org.squirrel.framework.response.RpEnum;
  */
 public interface BaseDao<T> extends MybatisBaseDao<T>, DataOperator<T> {
 
+	@Transactional
 	@Override
 	default Rp<T> add(T t) {
 		DataOperatorParam dataOperatorParam = DataOperatorParamFactory.create(t);
@@ -26,6 +28,7 @@ public interface BaseDao<T> extends MybatisBaseDao<T>, DataOperator<T> {
 		return Rp.success();
 	}
 
+	@Transactional
 	@Override
 	default Rp<T> add(List<T> list) {
 		DataOperatorParam dataOperatorParam = DataOperatorParamFactory.create(list);
@@ -36,6 +39,7 @@ public interface BaseDao<T> extends MybatisBaseDao<T>, DataOperator<T> {
 		return Rp.success();
 	}
 
+	@Transactional
 	@Override
 	default Rp<T> edit(String id, T t) {
 		// TODO
@@ -47,6 +51,7 @@ public interface BaseDao<T> extends MybatisBaseDao<T>, DataOperator<T> {
 		return Rp.success();
 	}
 
+	@Transactional
 	@Override
 	default Rp<T> remove(Set<String> ids){
 		// TODO

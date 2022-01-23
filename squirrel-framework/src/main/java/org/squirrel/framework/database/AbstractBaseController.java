@@ -22,7 +22,6 @@ import org.squirrel.framework.auth.AuthMenuLoader;
 import org.squirrel.framework.response.Rp;
 import org.squirrel.framework.response.RpEnum;
 import org.squirrel.framework.spring.ApplicationContextHelper;
-import org.squirrel.framework.util.StrUtil;
 
 import io.swagger.annotations.ApiOperation;
 import net.sf.oval.ConstraintViolation;
@@ -56,6 +55,7 @@ public abstract class AbstractBaseController<T> implements DataOperator<T>, Squi
 	/**
 	 * 当前实体对应VO类型
 	 */
+	@Deprecated // 暂时无用
 	private Class<T> classVO;
 	/**
 	 * oval检验
@@ -74,26 +74,13 @@ public abstract class AbstractBaseController<T> implements DataOperator<T>, Squi
 		this.validator = ApplicationContextHelper.getBean(Validator.class);
 	}
 
-	@Deprecated
+	@Deprecated // 仅测试使用
 	@Auth(AuthMenuLoader.ADD)
 	@ApiOperation(value = "新增批量")
 	@PostMapping(value = "addba")
 	@Override
 	public Rp<T> add(@RequestBody List<T> t) {
-//		List<ConstraintViolation> validate = validator.validate(t);
-//		if (!validate.isEmpty()) {
-//			Rp.failed(RpEnum.ERROR_VALIDATE, validate.get(0).getMessage());
-//		}
-//		String afterValidate = afterValidate(t);
-//		if (afterValidate != null) {
-//			Rp.failed(RpEnum.ERROR_VALIDATE, validate.get(0).getMessage());
-//		}
-//		beforeSave(t);
 		Rp<T> add = getService().add(t);
-		if (add.isSuccess()) {
-//			afterSave(t);
-			return Rp.success();
-		}
 		return add;
 	}
 
@@ -114,7 +101,6 @@ public abstract class AbstractBaseController<T> implements DataOperator<T>, Squi
 		Rp<T> add = getService().add(t);
 		if (add.isSuccess()) {
 			afterSave(t);
-			return Rp.success();
 		}
 		return add;
 	}
@@ -136,7 +122,6 @@ public abstract class AbstractBaseController<T> implements DataOperator<T>, Squi
 		Rp<T> edit = getService().edit(id, t);
 		if (edit.isSuccess()) {
 			afterUpdate(t);
-			return Rp.success();
 		}
 		return edit;
 	}
@@ -150,7 +135,6 @@ public abstract class AbstractBaseController<T> implements DataOperator<T>, Squi
 		Rp<T> remove = getService().remove(ids);
 		if (remove.isSuccess()) {
 			afterDel(ids);
-			return Rp.success();
 		}
 		return remove;
 	}
