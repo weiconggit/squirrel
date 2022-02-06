@@ -22,6 +22,7 @@ import org.squirrel.framework.auth.AuthMenuLoader;
 import org.squirrel.framework.response.Rp;
 import org.squirrel.framework.response.RpEnum;
 import org.squirrel.framework.spring.ApplicationContextHelper;
+import org.squirrel.framework.util.StrUtil;
 
 import io.swagger.annotations.ApiOperation;
 import net.sf.oval.ConstraintViolation;
@@ -35,9 +36,9 @@ import net.sf.oval.Validator;
  * @param <T>
  * @param <T>
  */
-public abstract class AbstractBaseController<T> implements DataOperator<T>, SquirrelInitializer {
+public abstract class DefaultBaseController<T> implements BaseController<T>, SquirrelInitializer {
 	
-	private final Logger log = LoggerFactory.getLogger(AbstractBaseController.class);
+	private final Logger log = LoggerFactory.getLogger(DefaultBaseController.class);
 	
 	// 通用接口地址
 	protected static final String LIST = "list";
@@ -52,25 +53,27 @@ public abstract class AbstractBaseController<T> implements DataOperator<T>, Squi
 	private static final String ASC = "asc";
 	private static final String DESC = "desc";
 	
-	/**
-	 * 当前实体对应VO类型
-	 */
-	@Deprecated // 暂时无用
-	private Class<T> classVO;
-	/**
-	 * oval检验
-	 */
+	/** oval检验 */
 	private Validator validator;
-
-	public abstract BaseService<T> getService();
+	/** service实现 */
+	private BaseService<T> baseService;
+	
+	@Override
+	public BaseService<T> getBaseService(){
+		return baseService;
+	}
 
 	@SuppressWarnings("unchecked")
 	@Override
 	public final void init() {
 		// 可放入无参构造中先行执行
 		Type[] actualTypeArguments = ((ParameterizedType) this.getClass().getGenericSuperclass()).getActualTypeArguments();
-		this.classVO = (Class<T>) actualTypeArguments[0];
-		// 需等待 ApplicationContextHelper创建之后
+		Class<T> classVO = (Class<T>) actualTypeArguments[0];
+		// 需等待 ApplicationContextHelper 创建之后
+		String simpleName = classVO.getClass().getSimpleName();
+		String serviceName = simpleName.substring(0, simpleName.length() - 2) + "Service";
+		serviceName = StrUtil.lowerFirstLetter(serviceName);
+		this.baseService = (BaseService<T>)ApplicationContextHelper.getBean(serviceName);
 		this.validator = ApplicationContextHelper.getBean(Validator.class);
 	}
 
@@ -80,7 +83,7 @@ public abstract class AbstractBaseController<T> implements DataOperator<T>, Squi
 	@PostMapping(value = "addba")
 	@Override
 	public Rp<T> add(@RequestBody List<T> t) {
-		Rp<T> add = getService().add(t);
+		Rp<T> add = getBaseService().insert(t);
 		return add;
 	}
 
@@ -97,12 +100,7 @@ public abstract class AbstractBaseController<T> implements DataOperator<T>, Squi
 		if (afterValidate != null) {
 			Rp.failed(RpEnum.ERROR_VALIDATE, validate.get(0).getMessage());
 		}
-		beforeSave(t);
-		Rp<T> add = getService().add(t);
-		if (add.isSuccess()) {
-			afterSave(t);
-		}
-		return add;
+		return getBaseService().insert(t);
 	}
 
 	@Auth(AuthMenuLoader.EDIT)
@@ -118,12 +116,7 @@ public abstract class AbstractBaseController<T> implements DataOperator<T>, Squi
 		if (afterValidate != null) {
 			return Rp.failed(RpEnum.ERROR_VALIDATE, afterValidate);
 		}
-		beforeUpdate(t);
-		Rp<T> edit = getService().edit(id, t);
-		if (edit.isSuccess()) {
-			afterUpdate(t);
-		}
-		return edit;
+		return getBaseService().update(t);
 	}
 
 	@Auth(AuthMenuLoader.DEL)
@@ -131,12 +124,7 @@ public abstract class AbstractBaseController<T> implements DataOperator<T>, Squi
 	@DeleteMapping(value = DEL)
 	@Override
 	public Rp<T> remove(@PathVariable(value = "ids") Set<String> ids) {
-		beforeDel(ids);
-		Rp<T> remove = getService().remove(ids);
-		if (remove.isSuccess()) {
-			afterDel(ids);
-		}
-		return remove;
+		return getBaseService().delete(ids);
 	}
 
 	@Auth(AuthMenuLoader.GET)
@@ -148,23 +136,12 @@ public abstract class AbstractBaseController<T> implements DataOperator<T>, Squi
 			query = new HashMap<>();
 		}
 		query.put(ISDEL, false);
-		return getService().list(query);
+		// TODO sort
+		return getBaseService().select(query, "");
 	}
 	
 	protected String afterValidate(T data) {
 		return null;
 	}
-	
-	protected void beforeSave(T data) {}
-	
-	protected void afterSave(T data) {}
-	
-	protected void beforeUpdate(T data) {}
-	
-	protected void afterUpdate(T data) {}
-	
-	protected void beforeDel(Set<String> ids) {}
-	
-	protected void afterDel(Set<String> ids) {}
 	
 }

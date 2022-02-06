@@ -6,78 +6,89 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.squirrel.framework.database.bean.DataOperatorEnum;
+import org.squirrel.framework.database.bean.BasePage;
+import org.squirrel.framework.database.data.DataOperatorEnum;
 import org.squirrel.framework.response.Rp;
 
 public interface BaseService<T> extends DataOperator<T> {
 
-	BaseDao<T> getDao();
+	BaseDao<T> getBaseDao();
 
 	@Override
-	default Rp<T> add(T t){
+	default Rp<T> insert(T t){
 		List<T> list = new ArrayList<>();
 		list.add(t);
-		beforeAdd(list);
-		Rp<T> add = getDao().add(t);
-		if (add.isSuccess()){
-			afterAdd(list);
+		beforeInsert(list);
+		Rp<T> insert = getBaseDao().insert(t);
+		if (insert.isSuccess()){
+			afterInsert(list);
 			afterChange(DataOperatorEnum.INSERT, list);
 		}
-		return add;
+		return insert;
 	}
 
 	@Override
-	default Rp<T> add(List<T> list){
-		beforeAdd(list);
-		Rp<T> add = getDao().add(list);
-		if (add.isSuccess()){
-			afterAdd(list);
+	default Rp<T> insert(List<T> list){
+		beforeInsert(list);
+		Rp<T> insert = getBaseDao().insert(list);
+		if (insert.isSuccess()){
+			afterInsert(list);
 			afterChange(DataOperatorEnum.INSERT, list);
 		}
-		return add;
+		return insert;
 	}
 
 	@Override
-	default Rp<T> edit(String id, T t){
+	default Rp<T> update(T t){
 		List<T> singletonList = Collections.singletonList(t);
-		beforeEdit(singletonList);
-		Rp<T> edit = getDao().edit(id, t);
-		if (edit.isSuccess()){
-			afterEdit(singletonList);
+		beforeUpdate(singletonList);
+		Rp<T> update = getBaseDao().update(t);
+		if (update.isSuccess()){
+			afterUpdate(singletonList);
 			afterChange(DataOperatorEnum.UPDATE, singletonList);
 		}
-		return edit;
+		return update;
 	}
 
 	@Override
-	default Rp<T> remove(Set<String> ids){
-		List<T> list = beforeRemove(ids);
-		Rp<T> remove = getDao().remove(ids);
+	default Rp<T> delete(Set<String> ids){
+		List<T> list = beforeDelete(ids);
+		Rp<T> remove = getBaseDao().delete(ids);
 		if (remove.isSuccess()){
-			afterRemove(list);
+			afterDelete(list);
 			afterChange(DataOperatorEnum.DELETE, list);
 		}
 		return remove;
 	}
 
 	@Override
-	default Rp<List<T>> list(Map<String, Object> query){
-		beforeList(query);
-		Rp<List<T>> list = getDao().list(query);
+	default Rp<List<T>> select(Map<String, Object> query, String sort){
+		beforeSelect(query);
+		Rp<List<T>> list = getBaseDao().select(query, sort);
 		if (list.isSuccess()){
-			afterList(list.getData());
+			afterSelect(list.getData());
 		}
 		return list;
 	}
+	
+	@Override
+	default Rp<BasePage<T>> page(Map<String, Object> query, Integer current, Integer limit, String sort) {
+		return null;
+	}
+
+	@Override
+	default Rp<T> detail(String id) {
+		return null;
+	}
 
 	default void afterChange(DataOperatorEnum dataOpEnum, List<T> list){};
-	default void beforeAdd(List<T> list){};
-	default void afterAdd(List<T> list){};
-	default void beforeEdit(List<T> list){};
-	default void afterEdit(List<T> list){};
-	default List<T> beforeRemove(Set<String> ids){ return Collections.emptyList(); };
-	default void afterRemove(List<T> list){};
-	default void beforeList(Map<String, Object> query){};
-	default void afterList(List<T> list){};
+	default void beforeInsert(List<T> list){};
+	default void afterInsert(List<T> list){};
+	default void beforeUpdate(List<T> list){};
+	default void afterUpdate(List<T> list){};
+	default List<T> beforeDelete(Set<String> ids){ return Collections.emptyList(); };
+	default void afterDelete(List<T> list){};
+	default void beforeSelect(Map<String, Object> query){};
+	default void afterSelect(List<T> list){};
 
 }

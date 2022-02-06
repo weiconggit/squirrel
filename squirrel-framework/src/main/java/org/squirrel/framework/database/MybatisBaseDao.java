@@ -7,7 +7,7 @@ import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
-import org.squirrel.framework.database.bean.DataOperatorParam;
+import org.squirrel.framework.database.data.DataOperatorParam;
 
 /**
  * @description mybatis通用Dao
@@ -23,8 +23,11 @@ public interface MybatisBaseDao<T> {
 	 * @return
 	 */
 	@Insert("<script>"
-			+ "INSERT INTO ${param.tableName} ${param.insertKeysSql} "
-			+ "VALUES "
+			+ "INSERT INTO ${param.tableName} "
+			+ "<foreach item=\"item\" collection=\"param.0\" separator=\",\" open=\"(\" close=\")\" index=\"\">"
+			+ "${item}"
+			+ "</foreach>"
+			+ " VALUES "
 			+ "<foreach item=\"itemList\" collection=\"param.values\" separator=\",\" open=\"\" close=\"\" index=\"\">"
 			+ "<foreach item=\"item\" collection=\"itemList\" separator=\",\" open=\"(\" close=\")\" index=\"\">"
 			+ "#{item}"
@@ -34,57 +37,125 @@ public interface MybatisBaseDao<T> {
 	int insert(@Param("param") DataOperatorParam param);
 
 	/**
-	 * 批量更新
+	 * 条件更新
 	 * @param param
 	 * @return
 	 */
 	@Update("<script>"
-			+ "UPDATE ${param.tableName} "
-			+ "SET "
-			+ "<foreach item=\"item\" collection=\"param.values\" separator=\",\" open=\"\" close=\"\" index=\"\">"
-			+ "${item}"
-			+ "</foreach> "
-			+ "${param.whereSql}"
+			+ "UPDATE ${param.tableName} SET "
+			+ "<foreach item=\"item\" collection=\"param.setKeyValues\" separator=\"\" open=\"\" close=\"\" index=\"\">"
+			+ "${item.key} = #{item.value}"
+			+ "</foreach>"
+			+ "<where>"
+			+ "<foreach item=\"item\" collection=\"param.whereKeyValues\" separator=\"\" open=\"\" close=\"\" index=\"\">"
+			+ "<if test=\"item.value != null\">" 
+			+ "AND ${item.key} = #{item.value}" 
+			+ "</if>"
+			+ "</foreach>"
+			+ "</where>"
 			+ "</script>")
 	int update(@Param("param") DataOperatorParam param);
 	
-//	<update id="updatePinyin">
-//	  UPDATE sys_region_continents
-//	  SET C_NAME_PINYIN =
-//	  <foreach collection="idNames" index="index" item="item"
-//	           open="CASE ID" separator=" " close="END">
-//	    WHEN #{item.id} THEN #{item.pinyin}
-//	  </foreach>
-//	  WHERE ID IN
-//	  <foreach collection="idNames" index="index" item="item"
-//	           open="(" separator="," close=")">
-//	    #{item.id,jdbcType=BIGINT}
-//	  </foreach>
-//	</update>
+	/**
+	 * id更新
+	 * @param param
+	 * @return
+	 */
+//	@Update("<script>"
+//			+ "UPDATE ${param.tableName} SET "
+//			+ "<foreach item=\"item\" collection=\"param.setKeyValues\" separator=\"\" open=\"\" close=\"\" index=\"\">"
+//			+ "${item.key} = #{item.value}"
+//			+ "</foreach>"
+//			+ " WHERE id = "
+//			+ "<foreach item=\"item\" collection=\"param.whereKeyValues\" separator=\"\" open=\"\" close=\"\" index=\"\">"
+//			+ "#{item.value}"
+//			+ "</foreach>"
+//			+ "</script>")
+//	int updateById(@Param("param") DataOperatorParam param);
 
 	/**
-	 * 批量删除
+	 * 条件删除
+	 * @param param
+	 * @return
+	 */
+//	@Delete("<script>"
+//			+ "DELETE FROM ${param.tableName}"
+//			+ "<where>"
+//			+ "<foreach item=\"item\" collection=\"param.whereKeyValues\" separator=\",\" open=\"\" close=\"\" index=\"\">"
+//			+ "AND ${item.key} = #{item.value}"
+//			+ "</foreach>"
+//			+ "</where>"
+//			+ "</script>")
+//	int delete(@Param("param") DataOperatorParam param);
+	
+
+	/**
+	 * ids删除
 	 * @param param
 	 * @return
 	 */
 	@Delete("<script>"
-			+ "DELETE FROM ${param.tableName} "
-			+ "${param.whereSql}"
+			+ "DELETE FROM ${param.tableName} WHERE id IN "
+			+ "<foreach item=\"item\" collection=\"param.whereKeyValues\" separator=\",\" open=\"(\" close=\")\" index=\"\">"
+			+ "#{item.value}"
+			+ "</foreach>"
 			+ "</script>")
-	int delete(@Param("param") DataOperatorParam param);
+	int deleteByIds(@Param("param") DataOperatorParam param);
 
 	/**
-	 * 批量查询
+	 * 查询
 	 * @param param
 	 * @return
 	 */
 	@Select("<script>"
 			+ "SELECT "
-			+ "<foreach item=\"item\" collection=\"param.feilds\" separator=\",\" open=\"\" close=\"\" index=\"\">"
+			+ "<foreach item=\"item\" collection=\"param.selectKeys\" separator=\",\" open=\"\" close=\"\" index=\"\">"
 			+ "${item}"
 			+ "</foreach> "
-			+ "FROM ${param.tableName} ${param.whereSql}"
+			+ " FROM ${param.tableName}"
+			+ "<where>"
+			+ "<foreach item=\"item\" collection=\"param.whereKeyValues\" separator=\",\" open=\"\" close=\"\" index=\"\">"
+			+ "AND ${item.key} = #{item.value}"
+			+ "</foreach>"
+			+ "</where>"
 			+ "</script>")
 	List<T> select(@Param("param") DataOperatorParam param);
+	
+	// select count(1) from table where is_active is null;
+	// SELECT * FROM product a JOIN (select id from product limit 866613, 20) b ON a.ID = b.id
+	/**
+	 * 条件查询总数
+	 * @param param
+	 * @return
+	 */
+	@Select("<script>"
+			+ "SELECT count(id) FROM ${param.tableName} "
+			+ "<where>"
+			+ "<foreach item=\"item\" collection=\"param.whereKeyValues\" separator=\",\" open=\"\" close=\"\" index=\"\">"
+			+ "AND ${item.key} = #{item.value}"
+			+ "</foreach>"
+			+ "</where>"
+			+ "</script>")
+	int count(@Param("param") DataOperatorParam param);
+	
+	/**
+	 * 分页查询
+	 * @param param
+	 * @return
+	 */
+	@Select("<script>"
+			+ "SELECT "
+			+ "<foreach item=\"item\" collection=\"param.selectKeys\" separator=\",\" open=\"\" close=\"\" index=\"\">"
+			+ "${item}"
+			+ "</foreach> "
+			+ " FROM ${param.tableName} a JOIN "
+			+ "(select id from ${param.tableName} limit #{strart}, #{limit}) b ON a.id = b.id"
+			+ "<where>"
+			+ "<foreach item=\"item\" collection=\"param.whereKeyValues\" separator=\",\" open=\"\" close=\"\" index=\"\">"
+			+ "AND b.${item.key} = #{item.value}"
+			+ "</foreach>"
+			+ "</where>"
+			+ "</script>")
+	List<T> page(@Param("param") DataOperatorParam param, @Param("start") Integer start, @Param("limit") Integer limit);
 	
 }

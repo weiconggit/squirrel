@@ -1,5 +1,6 @@
 package org.squirrel.framework.database;
 
+import org.squirrel.framework.database.bean.BasePage;
 import org.squirrel.framework.response.Rp;
 
 import java.util.List;
@@ -7,24 +8,26 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * @description 数据操作器
+ * @description 数据操作
  * @author weicong
  * @time   2022年1月20日
  * @version 1.0
  */
 public interface DataOperator<T> {
 
-    Rp<T> add(T t);
+    Rp<T> insert(T t);
 
-    Rp<T> add(List<T> list);
+    Rp<T> insert(List<T> list);
 
-    Rp<T> edit(String id, T t);
+    Rp<T> update(T t);
 
-    Rp<T> remove(Set<String> ids);
+    Rp<T> delete(Set<String> ids);
+    
+    Rp<T> detail(String id);
 
-    Rp<List<T>> list(Map<String, Object> query);
+    Rp<List<T>> select(Map<String, Object> query, String sort);
 
-//    Rp<PageVO<T>> page(Map<String, Object> query, String current, String size, String sort) ;
-//
-//    Rp<T> detail(String id);
+    Rp<BasePage<T>> page(Map<String, Object> query, Integer current, Integer limit, String sort) ;
+
+    
 }

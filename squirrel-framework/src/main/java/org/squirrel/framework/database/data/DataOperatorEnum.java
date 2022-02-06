@@ -1,4 +1,4 @@
-package org.squirrel.framework.database.bean;
+package org.squirrel.framework.database.data;
 
 /**
  * @description 数据操作类型枚举
@@ -8,9 +8,10 @@ package org.squirrel.framework.database.bean;
  */
 public enum DataOperatorEnum {
 
-    INSERT("add"),
-    UPDATE("edit"),
-    DELETE("delete");
+    INSERT("insert"),
+    UPDATE("update"),
+    DELETE("delete"),
+	SELECT("delete");
 
     private String type;
 

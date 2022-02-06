@@ -12,6 +12,6 @@ public class TestService2 {
     private TestService testService;
 
     public void haha(){
-        testService.list(null);
+        testService.select(null, "");
     }
 }
