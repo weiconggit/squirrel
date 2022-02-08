@@ -12,19 +12,33 @@ public class BasePage<T> {
 
 	private Integer current;// 当前页
 	private Integer limit; 	// 每页条数
-	private Integer total;	// 总页数
+	private Integer offset; // 偏移量
+	private Integer pageSize; // 总页数
+	private Integer total;	// 总数
 	private List<T> list;	// 数据
 
-	public BasePage() {}
-	
+	public static void main(String[] args) {
+		BasePage<Object> basePage = new BasePage<>(1, 10, 20);
+		System.out.println(basePage.toString());
+	}
+
 	/**
 	 * @param current
 	 * @param limit
+	 * @param total
 	 */
-	public BasePage(Integer current, Integer limit) {
+	public BasePage(Integer current, Integer limit, Integer total) {
 		super();
-		this.current = current;
-		this.limit = limit;
+		this.current = current == null ? 1 : current;
+		this.limit = limit == null ? 10 : limit;
+		this.total = total;
+		if (this.total != 0) {
+			int pageSizeTemp = total/limit; // 2/10=0,13/10=1
+			int pageSizeRem = total%limit; // 2%10=2,13%10=3,20%10=0
+			this.pageSize = pageSizeRem == 0 ? pageSizeTemp : pageSizeTemp + 1;
+			this.current = this.current > this.pageSize ? pageSize : this.current;
+			this.offset = (this.current - 1) * limit;
+		} 
 	}
 	
 	public final Integer getCurrent() {
@@ -51,5 +65,26 @@ public class BasePage<T> {
 	public final void setList(List<T> list) {
 		this.list = list;
 	}
+	public Integer getPageSize() {
+		return pageSize;
+	}
+	public void setPageSize(Integer pageSize) {
+		this.pageSize = pageSize;
+	}
+
+	public Integer getOffset() {
+		return offset;
+	}
+
+	public void setOffset(Integer offset) {
+		this.offset = offset;
+	}
+
+	@Override
+	public String toString() {
+		return "BasePage [current=" + current + ", limit=" + limit + ", offset=" + offset + ", pageSize=" + pageSize
+				+ ", total=" + total + ", list=" + list + "]";
+	}
+	
 	
 }

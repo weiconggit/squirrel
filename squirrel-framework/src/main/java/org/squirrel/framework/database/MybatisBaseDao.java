@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
+import org.squirrel.framework.database.bean.BasePage;
 import org.squirrel.framework.database.data.DataOperatorParam;
 
 /**
@@ -149,13 +150,13 @@ public interface MybatisBaseDao<T> {
 			+ "${item}"
 			+ "</foreach> "
 			+ " FROM ${param.tableName} a JOIN "
-			+ "(select id from ${param.tableName} limit #{strart}, #{limit}) b ON a.id = b.id"
+			+ "(select id from ${param.tableName} limit #{basePage.offset}, #{basePage.limit}) b ON a.id = b.id"
 			+ "<where>"
 			+ "<foreach item=\"item\" collection=\"param.whereKeyValues\" separator=\",\" open=\"\" close=\"\" index=\"\">"
 			+ "AND b.${item.key} = #{item.value}"
 			+ "</foreach>"
 			+ "</where>"
 			+ "</script>")
-	List<T> page(@Param("param") DataOperatorParam param, @Param("start") Integer start, @Param("limit") Integer limit);
+	List<T> page(@Param("param") DataOperatorParam param, @Param("basePage") BasePage<T> basePage);
 	
 }

@@ -78,9 +78,9 @@ public interface BaseDao<T> extends MybatisBaseDao<T>, DataOperator<T> {
 		Class<T> beanClass = getBeanClass();
 		DataOperatorParam dataOperatorParam = DataOperatorParamFactory.createSelect(beanClass, query);
 		int total = this.count(dataOperatorParam);
-		BasePage<T> basePage = new BasePage<>();
-		List<T> page = this.page(dataOperatorParam, 1, limit);
-		
+		BasePage<T> basePage = new BasePage<>(current, limit, total);
+		List<T> page = this.page(dataOperatorParam, basePage);
+		basePage.setList(page);
 		return Rp.success(basePage);
 	}
 
