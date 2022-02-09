@@ -33,7 +33,7 @@ public abstract class DefaultBaseService<T> implements BaseService<T>, SquirrelI
 	public void init() {
 		Type[] actualTypeArguments = ((ParameterizedType) this.getClass().getGenericSuperclass()).getActualTypeArguments();
 		Class<T> classVO = (Class<T>) actualTypeArguments[0];
-		String simpleName = classVO.getClass().getSimpleName();
+		String simpleName = classVO.getSimpleName();
 		String daoSuffix = SquirrelProperties.get(DAO_SUFFIX);
 		String genericsBeanSuffix = SquirrelProperties.get(GENERICS_BEAN_SUFFIX);
 		String daoName = simpleName.substring(0, simpleName.length() - genericsBeanSuffix.length()) + daoSuffix;

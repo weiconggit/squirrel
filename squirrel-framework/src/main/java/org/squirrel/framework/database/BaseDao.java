@@ -86,6 +86,8 @@ public interface BaseDao<T> extends MybatisBaseDao<T>, DataOperator<T> {
 
 	@Override
 	default Rp<T> detail(String id) {
+		// 
+//		this.detail(id);
 		return null;
 	}
 	

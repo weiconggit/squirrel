@@ -70,7 +70,7 @@ public abstract class DefaultBaseController<T> implements BaseController<T>, Squ
 		Type[] actualTypeArguments = ((ParameterizedType) this.getClass().getGenericSuperclass()).getActualTypeArguments();
 		Class<T> classVO = (Class<T>) actualTypeArguments[0];
 		// 需等待 ApplicationContextHelper 创建之后
-		String simpleName = classVO.getClass().getSimpleName();
+		String simpleName = classVO.getSimpleName();
 		String serviceName = simpleName.substring(0, simpleName.length() - 2) + "Service";
 		serviceName = StrUtil.lowerFirstLetter(serviceName);
 		this.baseService = (BaseService<T>)ApplicationContextHelper.getBean(serviceName);
