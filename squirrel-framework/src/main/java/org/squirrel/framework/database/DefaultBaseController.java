@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.squirrel.framework.SquirrelInitializer;
 import org.squirrel.framework.auth.Auth;
 import org.squirrel.framework.auth.AuthMenuLoader;
+import org.squirrel.framework.database.bean.BasePage;
 import org.squirrel.framework.response.Rp;
 import org.squirrel.framework.response.RpEnum;
 import org.squirrel.framework.spring.ApplicationContextHelper;
@@ -138,6 +139,20 @@ public abstract class DefaultBaseController<T> implements BaseController<T>, Squ
 		query.put(ISDEL, false);
 		// TODO sort
 		return getBaseService().select(query, "");
+	}
+	
+	@Auth(AuthMenuLoader.GET)
+	@ApiOperation(value = "获取分页")
+	@GetMapping(value = PAGE)
+//	@Override
+	public Rp<BasePage<T>> page(@RequestParam(name = "query", required = false) Map<String, Object> query, 
+			@RequestParam(name = "current") Integer current,@RequestParam(name = "limit") Integer limit) {
+		if (query == null) {
+			query = new HashMap<>();
+		}
+//		query.put(ISDEL, false);
+		// TODO sort
+		return getBaseService().page(query, current, limit, "");
 	}
 	
 	protected String afterValidate(T data) {

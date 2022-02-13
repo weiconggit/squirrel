@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.squirrel.framework.auth.AuthCache;
 import org.squirrel.framework.cache.CaffeineSquirrelCache;
 import org.squirrel.framework.cache.RedissonSquirrelCache;
+import org.squirrel.framework.database.SquirrelMybatisInterceptor;
 import org.squirrel.framework.util.ClassUtil;
 import org.squirrel.framework.util.StrUtil;
 import org.squirrel.framework.validate.ValidatorHelper;
@@ -167,12 +168,11 @@ public class SquirrelBeanRegistrar implements ImportBeanDefinitionRegistrar {
 		/**
 		 * 新的分页插件,一缓和二缓遵循mybatis的规则,需要设置 MybatisConfiguration#useDeprecatedExecutor = false 避免缓存出现问题
 		 */
-//		@Bean
-//		public MybatisPlusInterceptor mybatisPlusInterceptor() {
-//			MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
-//			interceptor.addInnerInterceptor(new PaginationInnerInterceptor(DbType.MYSQL));
-//			return interceptor;
-//		}
+		@Bean
+		public SquirrelMybatisInterceptor mybatisPlusInterceptor() {
+			SquirrelMybatisInterceptor interceptor = new SquirrelMybatisInterceptor();
+			return interceptor;
+		}
 //		@SuppressWarnings("deprecation")
 //		@Bean
 //		public ConfigurationCustomizer configurationCustomizer() {

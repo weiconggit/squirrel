@@ -4,7 +4,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
 import org.squirrel.framework.SquirrelInitializer;
-import org.squirrel.framework.SquirrelProperties;
+import org.squirrel.framework.database.data.DataConstant;
 import org.squirrel.framework.spring.ApplicationContextHelper;
 import org.squirrel.framework.util.StrUtil;
 
@@ -16,11 +16,6 @@ import org.squirrel.framework.util.StrUtil;
  */
 public abstract class DefaultBaseService<T> implements BaseService<T>, SquirrelInitializer {
 
-	/** Dao后缀 */
-	private static final String DAO_SUFFIX = "daoSuffix";
-	/** T的name后缀 */
-	private static final String GENERICS_BEAN_SUFFIX = "genericsBeanSuffix";
-	
 	/** dao实现 */
 	private BaseDao<T> baseDao;
 	
@@ -34,9 +29,9 @@ public abstract class DefaultBaseService<T> implements BaseService<T>, SquirrelI
 		Type[] actualTypeArguments = ((ParameterizedType) this.getClass().getGenericSuperclass()).getActualTypeArguments();
 		Class<T> classVO = (Class<T>) actualTypeArguments[0];
 		String simpleName = classVO.getSimpleName();
-		String daoSuffix = SquirrelProperties.get(DAO_SUFFIX);
-		String genericsBeanSuffix = SquirrelProperties.get(GENERICS_BEAN_SUFFIX);
-		String daoName = simpleName.substring(0, simpleName.length() - genericsBeanSuffix.length()) + daoSuffix;
+		String daoSuffix = DataConstant.DAO_SUFFIX;
+		String beanSuffix = DataConstant.BEAN_SUFFIX;
+		String daoName = simpleName.substring(0, simpleName.length() - beanSuffix.length()) + daoSuffix;
 		daoName = StrUtil.lowerFirstLetter(daoName);
 		this.baseDao = (BaseDao<T>)ApplicationContextHelper.getBean(daoName);
 	}

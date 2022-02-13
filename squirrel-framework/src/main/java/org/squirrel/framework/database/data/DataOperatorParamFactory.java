@@ -27,9 +27,6 @@ import org.squirrel.framework.util.StrUtil;
 public final class DataOperatorParamFactory {
 
     private static final Logger log = LoggerFactory.getLogger(DataOperatorParamFactory.class);
-    // 特殊字段的处理
-    private static final String ID = "id";
-    private static final String IS_DEL = "isDel";
     /// 实体字段信息缓存
     private static final Map<Class<?>, ParamCache> paramCacheMap = new ConcurrentHashMap<>();
 
@@ -41,9 +38,8 @@ public final class DataOperatorParamFactory {
      * @param ids
      * @return
      */
-    public static @Nonnull <T> DataOperatorParam createSelect(@Nonnull Class<T> beanClass, @Nullable Map<String, Object> query) {
-    	Class<?> superclass = beanClass.getSuperclass();
-    	ParamCache paramCache = getParamCache(superclass);
+    public static @Nonnull DataOperatorParam createSelect(@Nonnull Class<?> beanClass, @Nullable Map<String, Object> query) {
+    	ParamCache paramCache = getParamCache(beanClass);
         DataOperatorParam param = new DataOperatorParam();
         param.setTableName(paramCache.getTableName());
         param.setSelectKeys(paramCache.getKeys());
@@ -63,13 +59,12 @@ public final class DataOperatorParamFactory {
      * @param ids
      * @return
      */
-    public static @Nonnull <T> DataOperatorParam createDelete(@Nonnull Class<T> beanClass, @Nonnull Set<String> ids) {
-    	Class<?> superclass = beanClass.getSuperclass();
-    	ParamCache paramCache = getParamCache(superclass);
+    public static @Nonnull DataOperatorParam createDelete(@Nonnull Class<?> beanClass, @Nonnull Set<String> ids) {
+    	ParamCache paramCache = getParamCache(beanClass);
     	DataOperatorParam param = new DataOperatorParam();
     	param.setTableName(paramCache.getTableName());
     	for (String id : ids) {
-    		param.addWhereKeyValues(ID, id);
+    		param.addWhereKeyValues(DataConstant.DATA_ID, id);
     	}
     	return param;
     }
@@ -90,18 +85,20 @@ public final class DataOperatorParamFactory {
             for (Field field : fields) {
             	Object object = field.get(t);
                 String name = field.getName();
+                if (DataConstant.DATA_IS_DEL.equals(name)) {
+					continue;
+				}
                 // XXX id字段的特殊处理
-                if (ID.equals(name)) {
+                if (DataConstant.DATA_ID.equals(name)) {
                 	String key = fieldKey.get(name);
                 	param.addWhereKeyValues(key, object);
 				} else {
 					String key = fieldKey.get(name);
 					param.addSetKeyValue(key, object);
-					
 				}
             }
         } catch (Exception e) {
-            log.error("create insert error", e);
+            log.error("create update data operate error", e);
         }
         return param;
     }
@@ -129,7 +126,7 @@ public final class DataOperatorParamFactory {
                 List<Object> oneObjVals = new ArrayList<>();
                 for (Field field : fields) {
                 	// XXX isDel字段的特殊处理
-                	if (IS_DEL.equals(field.getName())) {
+                	if (DataConstant.DATA_IS_DEL.equals(field.getName())) {
 						oneObjVals.add(true);
 					} else {
 						Object object = field.get(t);
@@ -146,15 +143,14 @@ public final class DataOperatorParamFactory {
 
 	/**
 	  *  获取缓存
-	 * @param superclass
-	 * @param simpleName
+	 * @param beanClass 实体，如：SysUser.class
 	 * @return
 	 */
-	private static ParamCache getParamCache(Class<?> superclass) {
-		ParamCache paramCache = paramCacheMap.get(superclass);
+	private static ParamCache getParamCache(Class<?> beanClass) {
+		ParamCache paramCache = paramCacheMap.get(beanClass);
         // 初始化实体字段sql信息
         if (paramCache == null) {
-            Field[] declaredFields = superclass.getDeclaredFields();
+            Field[] declaredFields = beanClass.getDeclaredFields();
             List<String> keys = new ArrayList<>();
             Map<String, String> fieldKey = new HashMap<>();
             for (int i = 0, size = declaredFields.length; i < size; i++) {
@@ -166,9 +162,10 @@ public final class DataOperatorParamFactory {
                 fieldKey.put(name, fieldName);
             }
             /// TODO 暂时，实体对象未于表对应
-            String simpleName = superclass.getSimpleName();
+            String simpleName = beanClass.getSimpleName();
             String tableName = StrUtil.humpToUnderLine(simpleName);
-            paramCacheMap.put(superclass, new ParamCache("sys_user", declaredFields, keys, fieldKey));
+            paramCache = new ParamCache("sys_user", declaredFields, keys, fieldKey);
+            paramCacheMap.put(beanClass, paramCache);
         }
 		return paramCache;
 	}

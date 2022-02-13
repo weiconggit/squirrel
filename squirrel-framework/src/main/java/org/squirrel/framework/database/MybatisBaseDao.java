@@ -13,7 +13,7 @@ import org.squirrel.framework.database.data.DataOperatorParam;
 /**
  * @description mybatis通用Dao
  * @author weicong
- * @time   2021年7月24日 下午6:02:37
+ * @time   2021年7月24日
  * @version 1.0
  */
 public interface MybatisBaseDao<T> {
@@ -25,15 +25,15 @@ public interface MybatisBaseDao<T> {
 	 */
 	@Insert("<script>"
 			+ "INSERT INTO ${param.tableName} "
-			+ "<foreach item=\"item\" collection=\"param.0\" separator=\",\" open=\"(\" close=\")\" index=\"\">"
-			+ "${item}"
+			+ "<foreach item=\"item\" collection=\"param.insertKeys\" separator=\",\" open=\"(\" close=\")\" index=\"\">"
+				+ "${item}"
 			+ "</foreach>"
 			+ " VALUES "
 			+ "<foreach item=\"itemList\" collection=\"param.values\" separator=\",\" open=\"\" close=\"\" index=\"\">"
-			+ "<foreach item=\"item\" collection=\"itemList\" separator=\",\" open=\"(\" close=\")\" index=\"\">"
-			+ "#{item}"
+				+ "<foreach item=\"item\" collection=\"itemList\" separator=\",\" open=\"(\" close=\")\" index=\"\">"
+					+ "#{item}"
+				+ "</foreach>"
 			+ "</foreach>"
-			+ "</foreach> "
 			+ "</script>")
 	int insert(@Param("param") DataOperatorParam param);
 
@@ -44,35 +44,18 @@ public interface MybatisBaseDao<T> {
 	 */
 	@Update("<script>"
 			+ "UPDATE ${param.tableName} SET "
-			+ "<foreach item=\"item\" collection=\"param.setKeyValues\" separator=\"\" open=\"\" close=\"\" index=\"\">"
-			+ "${item.key} = #{item.value}"
-			+ "</foreach>"
+				+ "<foreach item=\"item\" collection=\"param.setKeyValues\" separator=\"\" open=\"\" close=\"\" index=\"\">"
+					+ "${item.key} = #{item.value}"
+				+ "</foreach>"
 			+ "<where>"
-			+ "<foreach item=\"item\" collection=\"param.whereKeyValues\" separator=\"\" open=\"\" close=\"\" index=\"\">"
-			+ "<if test=\"item.value != null\">" 
-			+ "AND ${item.key} = #{item.value}" 
-			+ "</if>"
-			+ "</foreach>"
+				+ "<foreach item=\"item\" collection=\"param.whereKeyValues\" separator=\"\" open=\"\" close=\"\" index=\"\">"
+					+ "<if test=\"item.value != null\">" 
+					+ "AND ${item.key} = #{item.value}" 
+					+ "</if>"
+				+ "</foreach>"
 			+ "</where>"
 			+ "</script>")
 	int update(@Param("param") DataOperatorParam param);
-	
-	/**
-	 * id更新
-	 * @param param
-	 * @return
-	 */
-//	@Update("<script>"
-//			+ "UPDATE ${param.tableName} SET "
-//			+ "<foreach item=\"item\" collection=\"param.setKeyValues\" separator=\"\" open=\"\" close=\"\" index=\"\">"
-//			+ "${item.key} = #{item.value}"
-//			+ "</foreach>"
-//			+ " WHERE id = "
-//			+ "<foreach item=\"item\" collection=\"param.whereKeyValues\" separator=\"\" open=\"\" close=\"\" index=\"\">"
-//			+ "#{item.value}"
-//			+ "</foreach>"
-//			+ "</script>")
-//	int updateById(@Param("param") DataOperatorParam param);
 
 	/**
 	 * 条件删除
@@ -97,9 +80,9 @@ public interface MybatisBaseDao<T> {
 	 */
 	@Delete("<script>"
 			+ "DELETE FROM ${param.tableName} WHERE id IN "
-			+ "<foreach item=\"item\" collection=\"param.whereKeyValues\" separator=\",\" open=\"(\" close=\")\" index=\"\">"
-			+ "#{item.value}"
-			+ "</foreach>"
+				+ "<foreach item=\"item\" collection=\"param.whereKeyValues\" separator=\",\" open=\"(\" close=\")\" index=\"\">"
+					+ "#{item.value}"
+				+ "</foreach>"
 			+ "</script>")
 	int deleteByIds(@Param("param") DataOperatorParam param);
 
@@ -110,17 +93,34 @@ public interface MybatisBaseDao<T> {
 	 */
 	@Select("<script>"
 			+ "SELECT "
-			+ "<foreach item=\"item\" collection=\"param.selectKeys\" separator=\",\" open=\"\" close=\"\" index=\"\">"
-			+ "${item}"
-			+ "</foreach> "
+				+ "<foreach item=\"item\" collection=\"param.selectKeys\" separator=\",\" open=\"\" close=\"\" index=\"\">"
+					+ "${item}"
+				+ "</foreach> "
 			+ " FROM ${param.tableName}"
 			+ "<where>"
-			+ "<foreach item=\"item\" collection=\"param.whereKeyValues\" separator=\",\" open=\"\" close=\"\" index=\"\">"
-			+ "AND ${item.key} = #{item.value}"
-			+ "</foreach>"
+				+ "<foreach item=\"item\" collection=\"param.whereKeyValues\" separator=\",\" open=\"\" close=\"\" index=\"\">"
+					+ "AND ${item.key} = #{item.value}"
+				+ "</foreach>"
 			+ "</where>"
 			+ "</script>")
 	List<T> select(@Param("param") DataOperatorParam param);
+	
+	
+	@Select("<script>"
+			+ "SELECT "
+				+ "<foreach item=\"item\" collection=\"param.selectKeys\" separator=\",\" open=\"\" close=\"\" index=\"\">"
+					+ "${item}"
+				+ "</foreach> "
+			+ " FROM ${param.tableName}"
+			+ "<if test=\"param.whereKeyValues != null\">" 
+			+ "<where>"
+				+ "<foreach item=\"item\" collection=\"param.whereKeyValues\" separator=\",\" open=\"\" close=\"\" index=\"\">"
+					+ "AND ${item.key} = #{item.value}"
+				+ "</foreach>"
+			+ "</where>"
+			+ "</if>"
+			+ "</script>")
+	List<T> page(@Param("page") BasePage<T> page, @Param("param") DataOperatorParam param);
 	
 	// select count(1) from table where is_active is null;
 	// SELECT * FROM product a JOIN (select id from product limit 866613, 20) b ON a.ID = b.id
@@ -129,34 +129,34 @@ public interface MybatisBaseDao<T> {
 	 * @param param
 	 * @return
 	 */
-	@Select("<script>"
-			+ "SELECT count(id) FROM ${param.tableName} "
-			+ "<where>"
-			+ "<foreach item=\"item\" collection=\"param.whereKeyValues\" separator=\",\" open=\"\" close=\"\" index=\"\">"
-			+ "AND ${item.key} = #{item.value}"
-			+ "</foreach>"
-			+ "</where>"
-			+ "</script>")
-	int count(@Param("param") DataOperatorParam param);
+//	@Select("<script>"
+//			+ "SELECT count(id) FROM ${param.tableName} "
+//			+ "<where>"
+//				+ "<foreach item=\"item\" collection=\"param.whereKeyValues\" separator=\",\" open=\"\" close=\"\" index=\"\">"
+//					+ "AND ${item.key} = #{item.value}"
+//				+ "</foreach>"
+//			+ "</where>"
+//			+ "</script>")
+//	int count(@Param("param") DataOperatorParam param);
 	
 	/**
 	 * 分页查询
 	 * @param param
 	 * @return
 	 */
-	@Select("<script>"
-			+ "SELECT "
-			+ "<foreach item=\"item\" collection=\"param.selectKeys\" separator=\",\" open=\"\" close=\"\" index=\"\">"
-			+ "${item}"
-			+ "</foreach> "
-			+ " FROM ${param.tableName} a JOIN "
-			+ "(select id from ${param.tableName} limit #{basePage.offset}, #{basePage.limit}) b ON a.id = b.id"
-			+ "<where>"
-			+ "<foreach item=\"item\" collection=\"param.whereKeyValues\" separator=\",\" open=\"\" close=\"\" index=\"\">"
-			+ "AND b.${item.key} = #{item.value}"
-			+ "</foreach>"
-			+ "</where>"
-			+ "</script>")
-	List<T> page(@Param("param") DataOperatorParam param, @Param("basePage") BasePage<T> basePage);
+//	@Select("<script>"
+//			+ "SELECT "
+//			+ "<foreach item=\"item\" collection=\"param.selectKeys\" separator=\",\" open=\"\" close=\"\" index=\"\">"
+//				+ "${item}"
+//			+ "</foreach> "
+//			+ " FROM ${param.tableName} a JOIN "
+//			+ "(select id from ${param.tableName} limit #{basePage.offset}, #{basePage.limit}) b ON a.id = b.id"
+//			+ "<where>"
+//				+ "<foreach item=\"item\" collection=\"param.whereKeyValues\" separator=\",\" open=\"\" close=\"\" index=\"\">"
+//					+ "AND b.${item.key} = #{item.value}"
+//				+ "</foreach>"
+//			+ "</where>"
+//			+ "</script>")
+//	List<T> page(@Param("param") DataOperatorParam param, @Param("basePage") BasePage<T> basePage);
 	
 }

@@ -13,8 +13,8 @@ import org.squirrel.framework.database.BaseDao;
 public interface UserMapper extends BaseDao<UserVO> {
 
 	@Override
-	default Class<UserVO> getBeanClass() {
-		return UserVO.class;
+	default Class<User> getBeanClass() {
+		return User.class;
 	}
 
 }

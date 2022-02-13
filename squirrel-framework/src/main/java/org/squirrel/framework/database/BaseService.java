@@ -73,7 +73,7 @@ public interface BaseService<T> extends DataOperator<T> {
 	
 	@Override
 	default Rp<BasePage<T>> page(Map<String, Object> query, Integer current, Integer limit, String sort) {
-		return null;
+		return getBaseDao().page(query, current, limit, sort);
 	}
 
 	@Override
