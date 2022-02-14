@@ -25,6 +25,8 @@ import org.squirrel.framework.util.StrUtil;
  */
 public final class AuthMenuLoader {
 
+	private AuthMenuLoader(){}
+
 	/**通用权限标识查询*/
 	public static final String GET = "get";
 	/**通用权限标识新增*/
@@ -33,108 +35,82 @@ public final class AuthMenuLoader {
 	public static final String EDIT = "edit";
 	/**通用权限标识删除*/
 	public static final String DEL = "del";
-	
-	private static List<AuthMenu> menus;
-	
-	/**
-	 * 获取全部权限信息
-	 * @return
-	 */
-	public static List<AuthMenu> getAllMenus(){
-		if (menus == null) {
-			menus = loadMenus();
-		}
-		return menus;
-	}
-	
+	/** 权限菜单缓存 */
+	private static List<AuthMenu> menusCache;
+
 	/**
 	 * 加载所有权限菜单
 	 * @return
 	 */
-	private static List<AuthMenu> loadMenus(){
+	public static List<AuthMenu> loadMenus(){
+		// 优先使用缓存
+		if (menusCache != null) {
+			return menusCache;
+		}
 		List<AuthMenu> menus = new ArrayList<>();
-		Map<String, Object> beansWithAnnotation = ApplicationContextHelper.getContext().getBeansWithAnnotation(RestController.class);
-		Iterator<Object> iterator = beansWithAnnotation.values().iterator();
-		AuthMenu authMenu = null;
-		
-		while (iterator.hasNext()) {
-			Class<?> clazz = iterator.next().getClass();
+		Map<String, Object> beansWithAnnotation = ApplicationContextHelper.getContext().getBeansWithAnnotation(Auth.class);
+		for (Object object : beansWithAnnotation.values()) {
+			Class<?> clazz = object.getClass();
 			Class<?> superclass = clazz.getSuperclass();
-			
-			RequestMapping requestMapping = clazz.getDeclaredAnnotation(RequestMapping.class);
-			String moduleUri = null;
-			if (requestMapping != null) {
-				String[] value = requestMapping.value();
-				moduleUri = value[0];
+			Auth authAnnotation = clazz.getDeclaredAnnotation(Auth.class);
+			// 没有该注解的不处理
+			String authValue = authAnnotation.value();
+			// 没有auth注解值，则不处理
+			if (StrUtil.isEmpty(authValue)) {
+				continue;
 			}
-			String langName = SquirrelProperties.get(moduleUri);
-			langName = StrUtil.isEmpty(langName) ? moduleUri : langName;
-			
-			// 获取类方法对应的权限信息
-			authMenu = new AuthMenu()
-					.setId(moduleUri)
-					.setName(langName)
-					.setType("0")
-					.setChildren(new ArrayList<>());
+			AuthMenu authMenu = new AuthMenu(authValue, SquirrelProperties.get(authValue), "0", null, null);
+			// 通用controller中的方法处理
 			if (superclass != null) {
 				loadMenu(superclass, authMenu);
 			}
+			// 自身中的方法处理
 			loadMenu(clazz, authMenu);
 			menus.add(authMenu);
 		}
+		menusCache = menus;
 		return menus;
 	}
 	
 	/**
 	 * 加载一个类中的权限菜单
-	 * @param clazz
-	 * @param authMenu
+	 * @param clazz controller class
+	 * @param authMenu 父类菜单
 	 */
-	private static final void loadMenu(Class<?> clazz, AuthMenu authMenu) {
+	private static void loadMenu(Class<?> clazz, AuthMenu authMenu) {
 		Method[] methods = clazz.getDeclaredMethods();
-		
 		for (Method method : methods) {
-			String uri = null;
+			String authId = null; // 父级菜单id+authVal
+			String authVal = null;
+			String rqUri = null;
 			String rqMethod = null;
-			String authId = null; // 模块名称+authVal
-			String authVal = null; 
 			Annotation[] meAnnotations = method.getDeclaredAnnotations();
 			for (Annotation annotation : meAnnotations) {
-				
 				if (annotation instanceof GetMapping) {
 					GetMapping getMapping = (GetMapping)annotation;
-					uri = getUri(getMapping.value());
+					rqUri = getUri(getMapping.value());
 					rqMethod = "GET";
 				} else if (annotation instanceof PostMapping) {
 					PostMapping postMapping = (PostMapping)annotation;
-					uri = getUri(postMapping.value());
+					rqUri = getUri(postMapping.value());
 					rqMethod = "POST";
 				} else if (annotation instanceof PutMapping) {
 					PutMapping putMapping = (PutMapping)annotation;
-					uri = getUri(putMapping.value());
+					rqUri = getUri(putMapping.value());
 					rqMethod = "PUT";
 				} else if (annotation instanceof DeleteMapping) {
 					DeleteMapping deleteMapping = (DeleteMapping)annotation;
-					uri = getUri(deleteMapping.value());
+					rqUri = getUri(deleteMapping.value());
 					rqMethod = "DELETE";
-				}
-				if (annotation instanceof Auth) {
+				} else if (annotation instanceof Auth) {
 					Auth auth = (Auth)annotation;
 					authVal = auth.value();
 					authId = authMenu.getId() + auth.value();
 				}
-				
 			}
-			if (uri != null && rqMethod != null && authId != null && authVal != null) {
-				uri = new StringBuilder().append(rqMethod).append("/")
-						.append(authMenu.getId()).append("/")
-						.append(uri).toString();
-				AuthMenu child = new AuthMenu()
-						.setId(authId)
-						.setName(SquirrelProperties.get(authVal))
-						.setType("1")
-						.setMethod(rqMethod)
-						.setUri(uri);
+			if (authId != null && authVal != null && rqUri != null && rqMethod != null) {
+				rqUri = rqMethod + "/" + authMenu.getId() + "/" + rqUri;
+				AuthMenu child = new AuthMenu(authId, SquirrelProperties.get(authVal), "1", rqUri, rqMethod);
 				authMenu.getChildren().add(child);
 			}
 		}

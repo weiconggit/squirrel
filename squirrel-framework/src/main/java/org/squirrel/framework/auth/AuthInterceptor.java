@@ -122,8 +122,7 @@ public class AuthInterceptor implements HandlerInterceptor, SquirrelInitializer 
 	public void init() {
 		authCache = ApplicationContextHelper.getBean(AuthCache.class);
 		objectMapper = ApplicationContextHelper.getBean(ObjectMapper.class);
-		List<AuthMenu> menus = AuthMenuLoader.getAllMenus();
-		
+		List<AuthMenu> menus = AuthMenuLoader.loadMenus();
 		menus.forEach(parent -> {
 			List<AuthMenu> children = parent.getChildren();
 			if (children != null && !children.isEmpty()) {

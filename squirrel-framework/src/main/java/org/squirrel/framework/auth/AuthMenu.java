@@ -1,5 +1,6 @@
 package org.squirrel.framework.auth;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -16,7 +17,16 @@ public class AuthMenu {
 	private String uri; // uri菜单的地址
 	private String method; // uri菜单的请求方式
 	private List<AuthMenu> children;
-	
+
+	public AuthMenu(String id, String name, String type, String uri, String method) {
+		this.id = id;
+		this.name = name;
+		this.type = type;
+		this.uri = uri;
+		this.method = method;
+		this.children = new ArrayList<>();
+	}
+
 	public String getId() {
 		return id;
 	}
