@@ -13,6 +13,7 @@ import com.github.benmanes.caffeine.cache.LoadingCache;
  * @time   2021年1月29日
  * @version 1.0
  */
+@Deprecated
 public class CaffeineSquirrelCache implements AuthCache {
 
 	private final LoadingCache<String, AuthUser> cache;

@@ -16,6 +16,7 @@ import org.squirrel.framework.auth.AuthUser;
  * @time   2021年1月29日
  * @version 1.0
  */
+@Deprecated
 public class RedissonSquirrelCache implements AuthCache {
 
 	private static RedissonClient redissonClient;
