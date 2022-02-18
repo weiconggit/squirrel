@@ -1,13 +1,8 @@
 package org.squirrel.framework;
 
-import java.io.File;
-import java.io.IOException;
-import java.lang.annotation.Annotation;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.swagger.annotations.Api;
+import net.sf.oval.Validator;
 import org.mybatis.spring.annotation.MapperScan;
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
@@ -21,22 +16,13 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
-import org.squirrel.framework.auth.AuthCache;
-import org.squirrel.framework.cache.CaffeineSquirrelCache;
-import org.squirrel.framework.cache.RedissonSquirrelCache;
+import org.squirrel.framework.cache.BaseCache;
+import org.squirrel.framework.cache.LocalBaseCache;
+import org.squirrel.framework.cache.RedissonBaseCache;
 import org.squirrel.framework.database.SquirrelMybatisInterceptor;
 import org.squirrel.framework.util.ClassUtil;
 import org.squirrel.framework.util.StrUtil;
 import org.squirrel.framework.validate.ValidatorHelper;
-
-//import com.baomidou.mybatisplus.annotation.DbType;
-//import com.baomidou.mybatisplus.autoconfigure.ConfigurationCustomizer;
-//import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
-//import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import io.swagger.annotations.Api;
-import net.sf.oval.Validator;
 import springfox.documentation.builders.ApiInfoBuilder;
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.builders.RequestHandlerSelectors;
@@ -46,6 +32,14 @@ import springfox.documentation.service.Parameter;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger2.annotations.EnableSwagger2WebMvc;
+
+import java.io.File;
+import java.io.IOException;
+import java.lang.annotation.Annotation;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
 /**
  * @description  bean注册
@@ -68,14 +62,12 @@ public class SquirrelBeanRegistrar implements ImportBeanDefinitionRegistrar {
 		// 扫描所有待注册的 spring bean
 		Set<Class<?>> classes = ClassUtil.getClasses(packageName);
 		Iterator<Class<?>> iterator = classes.iterator();
-		RootBeanDefinition beanDefinition = null;
 		while (iterator.hasNext()) {
 			Class<?> clazz = iterator.next();
 			Annotation[] declaredAnnotations = clazz.getDeclaredAnnotations();
 			for (Annotation annotation : declaredAnnotations) {
 				if (annotation instanceof SquirrelComponent) {
-					beanDefinition = new RootBeanDefinition(clazz);
-					registry.registerBeanDefinition(StrUtil.lowerFirstLetter(clazz.getSimpleName()), beanDefinition);
+					registry.registerBeanDefinition(StrUtil.lowerFirstLetter(clazz.getSimpleName()), new RootBeanDefinition(clazz));
 					
 					if (log.isDebugEnabled()) {
 						log.debug("{} Framework registry bean: {}", SquirrelProperties.LOG_SIGN, clazz.getSimpleName());
@@ -85,48 +77,32 @@ public class SquirrelBeanRegistrar implements ImportBeanDefinitionRegistrar {
 				}
 			}
 		}
-		// 需要特殊处理的 spring bean
-		registrySpecialBean(registry);
-		registryAuthCacheBean(registry);
-	}
-	
-	
-	
-	// ~ Special Registry
-	// =============================================================================
-
-	/**
-	 * 特殊bean注册
-	 * @param registry
-	 */
-	private void registrySpecialBean(BeanDefinitionRegistry registry) {
-		RootBeanDefinition beanDefinition = null; 
 		// objectMapper
-		if (!registry.containsBeanDefinition(StrUtil.lowerFirstLetter(ObjectMapper.class.getSimpleName()))) {
-			beanDefinition = new RootBeanDefinition(ObjectMapper.class);
-			registry.registerBeanDefinition(StrUtil.lowerFirstLetter(ObjectMapper.class.getSimpleName()), beanDefinition);
+		String objectMapper = StrUtil.lowerFirstLetter(ObjectMapper.class.getSimpleName());
+		if (!registry.containsBeanDefinition(objectMapper)) {
+			registry.registerBeanDefinition(objectMapper, new RootBeanDefinition(ObjectMapper.class));
 		}
 		// validator
 		Validator validator = new ValidatorHelper();
-		beanDefinition = new RootBeanDefinition(Validator.class, () -> validator);
-		registry.registerBeanDefinition(StrUtil.lowerFirstLetter(Validator.class.getSimpleName()), beanDefinition);
+		registry.registerBeanDefinition(StrUtil.lowerFirstLetter(Validator.class.getSimpleName()), new RootBeanDefinition(Validator.class, () -> validator));
+		// 缓存
+		registryBaseCacheBean(registry);
 	}
 
 	/**
 	 * 权限缓存bean注册
 	 * @param registry
 	 */
-	private void registryAuthCacheBean(BeanDefinitionRegistry registry) {
+	private void registryBaseCacheBean(BeanDefinitionRegistry registry) {
 		// 2021年5月10日 增加 redisson 配置文件名定义
 		String redissonFileName = SquirrelProperties.REDISSON_FILE_NAME;
-		String authCache = StrUtil.lowerFirstLetter(AuthCache.class.getSimpleName());
-		// 无配置文件时，启用 caffeine 否则启用 redisson
+		String baseCache = StrUtil.lowerFirstLetter(BaseCache.class.getSimpleName());
+		// 无配置文件时，启用 本地缓存 否则启用 redisson
 		if (StrUtil.isEmpty(redissonFileName)) {
-			log.info("{} Enable caffeine cache", SquirrelProperties.LOG_SIGN);
-			RootBeanDefinition beanDefinition = new RootBeanDefinition(CaffeineSquirrelCache.class);
-			registry.registerBeanDefinition(authCache, beanDefinition);
+			log.info("{} Enable local cache", SquirrelProperties.LOG_SIGN);
+			registry.registerBeanDefinition(baseCache, new RootBeanDefinition(LocalBaseCache.class));
 		} else {
-			log.info("{} Enable redis cahce", SquirrelProperties.LOG_SIGN);
+			log.info("{} Enable redisson cahce", SquirrelProperties.LOG_SIGN);
 			String path = System.getProperty("user.dir");
 			path = new StringBuilder(File.separator).append(path).append(File.separator)
 					.append("src").append(File.separator)
@@ -134,23 +110,19 @@ public class SquirrelBeanRegistrar implements ImportBeanDefinitionRegistrar {
 					.append("resources").append(File.separator)
 					.append(redissonFileName).toString();
 			File file = new File(path);
-			if (!file.exists()) {
+			if (file.exists()) {
+				try {
+					// redissonClient 自定义配置文件官方使用步骤
+					Config config = Config.fromYAML(file);
+					RedissonClient redissonClient = Redisson.create(config);
+					registry.registerBeanDefinition("redissonClient", new RootBeanDefinition(RedissonClient.class, () -> redissonClient));
+					// redisson缓存
+					registry.registerBeanDefinition(baseCache, new RootBeanDefinition(RedissonBaseCache.class, () -> new RedissonBaseCache(redissonClient)));
+				} catch (IOException e) {
+					log.error("{} Redisson config from yaml error: {}", SquirrelProperties.LOG_SIGN, e);
+				}
+			} else {
 				log.error("{} Redisson file not exists: {}", SquirrelProperties.LOG_SIGN, path);
-				return;
-			}
-			try {
-				// redisson 自定义配置文件官方使用步骤
-				Config config = Config.fromYAML(file);
-				RedissonClient redissonClient = Redisson.create(config);
-				RedissonSquirrelCache.setRedissonCache(redissonClient);
-				// 注册 AuthCache 的实现类
-				RootBeanDefinition beanDefinition = new RootBeanDefinition(RedissonSquirrelCache.class);
-				registry.registerBeanDefinition(authCache, beanDefinition);
-				// 注册 RedissonClient
-				beanDefinition = new RootBeanDefinition(RedissonClient.class, () -> redissonClient);
-				registry.registerBeanDefinition(StrUtil.lowerFirstLetter(RedissonClient.class.getSimpleName()), beanDefinition);
-			} catch (IOException e) {
-				log.error("{} Redisson config from yaml error: {}", SquirrelProperties.LOG_SIGN, e);
 			}
 		}
 	}
@@ -165,19 +137,10 @@ public class SquirrelBeanRegistrar implements ImportBeanDefinitionRegistrar {
 	@MapperScan(value = {"org.squirrel.*.*"})
 	@Configuration
 	protected static class MybatisConfig {
-		/**
-		 * 新的分页插件,一缓和二缓遵循mybatis的规则,需要设置 MybatisConfiguration#useDeprecatedExecutor = false 避免缓存出现问题
-		 */
 		@Bean
 		public SquirrelMybatisInterceptor mybatisPlusInterceptor() {
-			SquirrelMybatisInterceptor interceptor = new SquirrelMybatisInterceptor();
-			return interceptor;
+			return new SquirrelMybatisInterceptor();
 		}
-//		@SuppressWarnings("deprecation")
-//		@Bean
-//		public ConfigurationCustomizer configurationCustomizer() {
-//			return configuration -> configuration.setUseDeprecatedExecutor(false);
-//		}
 	}
 	
 	@SquirrelComponent

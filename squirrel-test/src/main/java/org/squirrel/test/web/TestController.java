@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.squirrel.framework.auth.Auth;
-import org.squirrel.framework.auth.AuthCache;
 import org.squirrel.framework.auth.AuthUser;
 
 import io.swagger.annotations.Api;

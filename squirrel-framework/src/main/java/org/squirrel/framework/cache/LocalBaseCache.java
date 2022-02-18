@@ -2,13 +2,17 @@ package org.squirrel.framework.cache;
 
 import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;
-import jdk.jshell.execution.LoaderDelegate;
+import com.google.common.util.concurrent.Striped;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.ref.ReferenceQueue;
+import java.lang.ref.WeakReference;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @description 本地缓存
@@ -22,14 +26,8 @@ public class LocalBaseCache implements BaseCache {
 
 	private static final Map<String, CacheObejct> map = new ConcurrentHashMap<>();
 
-	/**
-	 * Guava 弱引用池，优先被GC
-	 */
-	private static final Interner<String> stringPool = Interners.newWeakInterner();
-
-//	public void lock(String key, long expiraTime){
-//
-//	}
+//	private ReferenceQueue<ReentrantLock> queue = new ReferenceQueue<>();
+//	private static final Map<String, CacheObejct> map = new ConcurrentHashMap<>();
 
 	@Override
 	public <T> Optional<T> get(String key, Class<T> clazz){
@@ -63,14 +61,30 @@ public class LocalBaseCache implements BaseCache {
 		map.put(key, new CacheObejct(key, object));
 	}
 
-	/**
-	 * @param key
-	 * @param object
-	 * @param expiraTime 过期时间，秒
-	 */
 	@Override
 	public void put(String key, Object object, int expiraTime) {
 		map.put(key, new CacheObejct(key, object, expiraTime));
+	}
+
+	@Override
+	public void lock(String lockKey) {
+//		lockStriped.get(lockKey);
+	}
+
+	@Override
+	public void unlock(String lockKey) {
+//		lockMap.computeIfAbsent(lockKey, k -> new ReentrantLock()).lock();
+	}
+
+	@Override
+	public void lock(String lockKey, int timeout) {
+		// TODO
+	}
+
+	@Override
+	public boolean tryLock(String lockKey, int waitTime, int leaseTime) {
+		// TODO
+		return false;
 	}
 
 	/**
