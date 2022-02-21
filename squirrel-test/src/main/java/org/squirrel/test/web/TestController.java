@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.squirrel.framework.auth.Auth;
 import org.squirrel.framework.auth.AuthUser;
+import org.squirrel.framework.cache.BaseCache;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -28,16 +29,16 @@ public class TestController {
 //	@Resource
 //	private RedissonClient redissonClient;
 	@Resource
-	private AuthCache authCache;
+	private BaseCache baseCache;
 	@Resource
 	private TestMapper testMapper;
 	@Resource
 	private TestService testService;
 	
-	@GetMapping("auth")
-	public AuthUser testAuth() {
-		return authCache.getAuth("test");
-	}
+//	@GetMapping("auth")
+//	public AuthUser testAuth() {
+//		return baseCache.get("test");
+//	}
 	
 	@ApiOperation(value="获取列表信息")
 	@GetMapping("alive")

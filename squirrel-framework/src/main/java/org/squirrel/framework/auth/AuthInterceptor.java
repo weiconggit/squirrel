@@ -47,7 +47,6 @@ public class AuthInterceptor implements HandlerInterceptor, SquirrelInitializer 
 	private static final Map<String, String> RESOURCE_NOT_GET = new HashMap<>();
 		
 	private ObjectMapper objectMapper;
-	private AuthCache authCache;
 	
 	@Override
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
@@ -120,7 +119,7 @@ public class AuthInterceptor implements HandlerInterceptor, SquirrelInitializer 
 
 	@Override
 	public void init() {
-		authCache = ApplicationContextHelper.getBean(AuthCache.class);
+//		authCache = ApplicationContextHelper.getBean(AuthCache.class);
 		objectMapper = ApplicationContextHelper.getBean(ObjectMapper.class);
 		List<AuthMenu> menus = AuthMenuLoader.loadMenus();
 		menus.forEach(parent -> {
