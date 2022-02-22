@@ -24,10 +24,8 @@ public class LocalBaseCache implements BaseCache {
 	private static final Logger log = LoggerFactory.getLogger(LocalBaseCache.class);
 
 	private static final Map<String, CacheObejct> map = new ConcurrentHashMap<>();
-	// TODO
-	private static final Map<String, CacheObejct> mapExpiraTime = new ConcurrentHashMap<>();
 
-	private static ReferenceQueue<Lock> queue = new ReferenceQueue<>();
+	private static final ReferenceQueue<Lock> queue = new ReferenceQueue<>();
 	private static final Map<String, WeakReference<Lock>> mapLock = new ConcurrentHashMap<>();
 
 	static {
@@ -58,7 +56,7 @@ public class LocalBaseCache implements BaseCache {
 				}
 			}
 		});
-//		thread.start();
+		thread.start();
 	}
 	
 	
