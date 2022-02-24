@@ -6,7 +6,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.squirrel.framework.auth.AuthInterceptor;
+import org.squirrel.framework.auth.SquirrelAuthInterceptor;
 
 /**
  * @description 
@@ -21,8 +21,8 @@ public class ImgController {
 	public void img(HttpServletRequest request, HttpServletResponse response
 			, @PathVariable(value = "token") String token
 			, @PathVariable(value = "imguri") String imguri) {
-		request.setAttribute(AuthInterceptor.AUTHORIZATION, token);
-		request.setAttribute(AuthInterceptor.IMG_URL_SIGN, imguri);
+		request.setAttribute(SquirrelAuthInterceptor.AUTHORIZATION, token);
+		request.setAttribute(SquirrelAuthInterceptor.IMG_URL_SIGN, imguri);
 		try {
 			request.getRequestDispatcher(imguri).forward(request, response);
 		} catch (Exception e) {

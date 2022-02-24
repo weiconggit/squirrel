@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.springframework.transaction.annotation.Transactional;
-import org.squirrel.framework.database.bean.BasePage;
+import org.squirrel.framework.database.page.BasePage;
 import org.squirrel.framework.database.data.DataConstant;
 import org.squirrel.framework.database.data.DataOperatorParam;
 import org.squirrel.framework.database.data.DataOperatorParamFactory;

@@ -1,4 +1,4 @@
-package org.squirrel.framework.database.bean;
+package org.squirrel.framework.database.page;
 
 import java.util.ArrayList;
 import java.util.List;

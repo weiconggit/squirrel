@@ -58,8 +58,13 @@ public class LocalBaseCache implements BaseCache {
 		});
 		thread.start();
 	}
-	
-	
+
+
+	@Override
+	public void remove(String key) {
+		map.remove(key);
+	}
+
 	@Override
 	public <T> Optional<T> get(String key, Class<T> clazz){
 		CacheObejct cacheObejct = map.get(key);

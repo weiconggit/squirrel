@@ -32,9 +32,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @version 1.0
  */
 @SquirrelComponent
-public class AuthInterceptor implements HandlerInterceptor, SquirrelInitializer {
+public class SquirrelAuthInterceptor implements HandlerInterceptor, SquirrelInitializer {
 
-	private static final Logger log = LoggerFactory.getLogger(AuthInterceptor.class);
+	private static final Logger log = LoggerFactory.getLogger(SquirrelAuthInterceptor.class);
 	
 	public static final String AUTHORIZATION = "Authorization";
 	public static final String IMG_URL_SIGN = "img";
@@ -98,24 +98,24 @@ public class AuthInterceptor implements HandlerInterceptor, SquirrelInitializer 
 		return false;
 	}
 
-	private boolean imgCheck(HttpServletRequest request, String imgUri) {
-		String token = StrUtil.parseString(request.getAttribute(AUTHORIZATION));
-		if (token == null) {
-			return false;
-		}
-		AuthUser authUser = TOKEN_USER.get(token);
-		if (authUser == null) {
-			return false;
-		}
-		Set<String> imgResource = authUser.getStaticResource();
-		if (imgResource == null || imgResource.isEmpty()) {
-			return false;
-		}
-		if (imgResource.contains(imgUri)) {
-			return true;
-		}
-		return false;
-	}
+//	private boolean imgCheck(HttpServletRequest request, String imgUri) {
+//		String token = StrUtil.parseString(request.getAttribute(AUTHORIZATION));
+//		if (token == null) {
+//			return false;
+//		}
+//		AuthUser authUser = TOKEN_USER.get(token);
+//		if (authUser == null) {
+//			return false;
+//		}
+//		Set<String> imgResource = authUser.getStaticResource();
+//		if (imgResource == null || imgResource.isEmpty()) {
+//			return false;
+//		}
+//		if (imgResource.contains(imgUri)) {
+//			return true;
+//		}
+//		return false;
+//	}
 
 	@Override
 	public void init() {

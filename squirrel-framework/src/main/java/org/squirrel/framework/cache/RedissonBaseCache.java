@@ -27,6 +27,14 @@ public class RedissonBaseCache implements BaseCache {
     }
 
     @Override
+    public void remove(String key) {
+        RBucket<Object> bucket = redissonClient.getBucket(key);
+        if (bucket != null) {
+            bucket.delete();
+        }
+    }
+
+    @Override
     public <T> Optional<T> get(String key, Class<T> clazz) {
         RBucket<Object> bucket = redissonClient.getBucket(key);
         if (bucket.isExists()) {

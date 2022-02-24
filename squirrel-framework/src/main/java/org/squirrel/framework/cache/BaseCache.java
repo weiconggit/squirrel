@@ -10,6 +10,8 @@ import java.util.Optional;
  */
 public interface BaseCache {
 
+    void remove(String key);
+
     <T> Optional<T> get(String key, Class<T> clazz);
 
     Optional<Object> get(String key);

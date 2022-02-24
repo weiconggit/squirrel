@@ -14,7 +14,7 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.squirrel.framework.SquirrelProperties;
 import org.squirrel.framework.SquirrelComponent;
-import org.squirrel.framework.auth.AuthInterceptor;
+import org.squirrel.framework.auth.SquirrelAuthInterceptor;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -32,7 +32,7 @@ public class SquirrelWebMvcConfigurer implements WebMvcConfigurer {
 	private static final Logger log = LoggerFactory.getLogger(SquirrelWebMvcConfigurer.class);
 	
 	@Resource
-	private AuthInterceptor authInterceptor;
+	private SquirrelAuthInterceptor authInterceptor;
 	@Resource
 	private ObjectMapper objectMapper;
 	

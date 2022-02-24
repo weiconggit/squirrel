@@ -1,6 +1,7 @@
 package org.squirrel.framework.util;
 
 import java.util.Objects;
+import java.util.Random;
 
 /**
  * @author weicong
@@ -10,7 +11,22 @@ import java.util.Objects;
 public final class StrUtil {
 
 	private StrUtil() {}
-	
+
+	/**
+	 * 获取固定长度随机数
+	 *
+	 * @param len
+	 * @return
+	 */
+	public static String getRandom(int len) {
+		Random random = new Random();
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < len; i++) {
+			sb.append(random.nextInt(10));
+		}
+		return sb.toString();
+	}
+
 	public static String parseString(Object object) {
 		return object == null ? null : object.toString();
 	}

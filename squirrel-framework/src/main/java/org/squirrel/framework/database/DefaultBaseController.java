@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.squirrel.framework.SquirrelInitializer;
 import org.squirrel.framework.auth.Auth;
 import org.squirrel.framework.auth.AuthMenuLoader;
-import org.squirrel.framework.database.bean.BasePage;
+import org.squirrel.framework.database.page.BasePage;
 import org.squirrel.framework.response.Rp;
 import org.squirrel.framework.response.RpEnum;
 import org.squirrel.framework.spring.ApplicationContextHelper;

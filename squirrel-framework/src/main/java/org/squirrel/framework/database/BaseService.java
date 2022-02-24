@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.squirrel.framework.database.bean.BasePage;
+import org.squirrel.framework.database.page.BasePage;
 import org.squirrel.framework.database.data.DataOperatorEnum;
 import org.squirrel.framework.response.Rp;
 
