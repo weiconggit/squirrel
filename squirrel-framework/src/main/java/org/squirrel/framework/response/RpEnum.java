@@ -10,14 +10,22 @@ public enum RpEnum {
 
 	SUCCESS(0, "操作成功"),
 	FAILED(-1, "操作失败"),
-	FAILED_ADD(-2, "新增失败"),
-	FAILED_EDIT(-3, "编辑失败"),
-	FAILED_REMOVE(-4, "删除失败"),
-	ERROR_SYSTEM(-11, "系统繁忙"),
-	ERROR_PARAMETER(-12, "参数错误"),
-	ERROR_VALIDATE(-13, "校验错误"),
-	NO_AUTHEN(-21, "请先登录"),
-	NO_AUTHOR(-22, "没有权限");
+	ERROR_SYSTEM(-2, "系统繁忙"),
+	ERROR_PARAMETER(-3, "参数错误"),
+	ERROR_VALIDATE(-4, "校验错误"),
+
+	NO_AUTHEN(-11, "登录已过期，请重新登录"),
+	ERROR_USERNAME_REPEAT(-12, "该账号已被注册"),
+	ERROR_SMS_CODE(-13, "短信验证码错误"),
+	ERROR_IMG_CODE(-14, "图形验证码错误"),
+	ERROR_USERNAME_OR_PASSWORD(-15, "账号或密码错误"),
+	FAILED_WX_AUTH(-16, "微信授权失败"),
+	FAILED_QQ_AUTH(-17, "QQ授权失败"),
+	NO_AUTHOR(-18, "对不起，您没有该操作权限"),
+
+	FAILED_ADD(-31, "新增失败"),
+	FAILED_EDIT(-32, "编辑失败"),
+	FAILED_REMOVE(-33, "删除失败");
 
 
 	private final Integer code;

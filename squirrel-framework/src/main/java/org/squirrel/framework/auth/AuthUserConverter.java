@@ -8,6 +8,6 @@ package org.squirrel.framework.auth;
  */
 public interface AuthUserConverter {
 
-    AuthUser convert(LoginUser loginUser);
+    AuthUser convert(BaseUser baseUser);
 
 }
