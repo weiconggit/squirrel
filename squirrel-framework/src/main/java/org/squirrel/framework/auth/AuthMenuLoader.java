@@ -3,7 +3,6 @@ package org.squirrel.framework.auth;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -11,9 +10,8 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 import org.squirrel.framework.SquirrelProperties;
+import org.squirrel.framework.auth.annotation.Auth;
 import org.squirrel.framework.spring.ApplicationContextHelper;
 import org.squirrel.framework.util.StrUtil;
 

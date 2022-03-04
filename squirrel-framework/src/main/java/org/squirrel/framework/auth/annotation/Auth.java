@@ -1,4 +1,4 @@
-package org.squirrel.framework.auth;
+package org.squirrel.framework.auth.annotation;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;

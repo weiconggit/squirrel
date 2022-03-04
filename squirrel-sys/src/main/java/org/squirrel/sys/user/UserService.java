@@ -1,9 +1,7 @@
 package org.squirrel.sys.user;
 
 import org.springframework.stereotype.Service;
-import org.squirrel.framework.database.DefaultBaseService;
-import org.squirrel.framework.database.BaseDao;
-import org.squirrel.framework.database.BaseService;
+import org.squirrel.framework.database.AbstractBaseService;
 
 import javax.annotation.Resource;
 
@@ -14,7 +12,7 @@ import javax.annotation.Resource;
  * @version v1
  */
 @Service
-public class UserService extends DefaultBaseService<UserVO>{
+public class UserService extends AbstractBaseService<UserVO> {
 
 	@Resource
 	private UserMapper userMapper;

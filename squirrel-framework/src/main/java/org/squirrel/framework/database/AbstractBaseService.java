@@ -14,7 +14,7 @@ import org.squirrel.framework.util.StrUtil;
  * @time   2022年2月6日 上午11:24:17
  * @version 1.0
  */
-public abstract class DefaultBaseService<T> implements BaseService<T>, SquirrelInitializer {
+public abstract class AbstractBaseService<T> implements BaseService<T>, SquirrelInitializer {
 
 	/** dao实现 */
 	private BaseDao<T> baseDao;

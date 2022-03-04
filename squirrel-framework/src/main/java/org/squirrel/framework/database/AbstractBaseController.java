@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.squirrel.framework.SquirrelInitializer;
-import org.squirrel.framework.auth.Auth;
+import org.squirrel.framework.auth.annotation.Auth;
 import org.squirrel.framework.auth.AuthMenuLoader;
 import org.squirrel.framework.database.page.BasePage;
 import org.squirrel.framework.response.Rp;
@@ -37,9 +37,9 @@ import net.sf.oval.Validator;
  * @param <T>
  * @param <T>
  */
-public abstract class DefaultBaseController<T> implements BaseController<T>, SquirrelInitializer {
+public abstract class AbstractBaseController<T> implements BaseController<T>, SquirrelInitializer {
 	
-	private final Logger log = LoggerFactory.getLogger(DefaultBaseController.class);
+	private final Logger log = LoggerFactory.getLogger(AbstractBaseController.class);
 	
 	// 通用接口地址
 	protected static final String LIST = "list";
