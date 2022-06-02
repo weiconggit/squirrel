@@ -26,6 +26,7 @@ import org.squirrel.framework.util.StrUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
+ * 认证权限拦截
  * @description 
  * @author weicong
  * @time   2021年1月29日 下午11:32:06
@@ -42,7 +43,7 @@ public class SquirrelAuthInterceptor implements HandlerInterceptor, SquirrelInit
 	public static final String RESOURCE_TYPE_IMG = "img";
 	public static final String RESOURCE_TYPE_MENU = "normal";
 	
-	public static final Map<String, AuthUser> TOKEN_USER = new ConcurrentHashMap<>();
+	public static final Map<String, AuthorityUser> TOKEN_USER = new ConcurrentHashMap<>();
 	private static final Map<String, String> RESOURCE_GET = new HashMap<>();
 	private static final Map<String, String> RESOURCE_NOT_GET = new HashMap<>();
 		
@@ -87,7 +88,7 @@ public class SquirrelAuthInterceptor implements HandlerInterceptor, SquirrelInit
 		if (StrUtil.isEmpty(menuId)) {
 			return false;
 		}
-		AuthUser authUser = TOKEN_USER.get(token);
+		AuthorityUser authUser = TOKEN_USER.get(token);
 		if (authUser == null) {
 			return false;
 		}
@@ -121,9 +122,9 @@ public class SquirrelAuthInterceptor implements HandlerInterceptor, SquirrelInit
 	public void init() {
 //		authCache = ApplicationContextHelper.getBean(AuthCache.class);
 		objectMapper = ApplicationContextHelper.getBean(ObjectMapper.class);
-		List<AuthMenu> menus = AuthMenuLoader.loadMenus();
+		List<AuthorityMenu> menus = AuthorityMenuLoader.loadMenus();
 		menus.forEach(parent -> {
-			List<AuthMenu> children = parent.getChildren();
+			List<AuthorityMenu> children = parent.getChildren();
 			if (children != null && !children.isEmpty()) {
 				children.forEach(child -> {
 					if ("GET".equals(child.getMethod())) {

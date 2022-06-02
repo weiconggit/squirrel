@@ -17,8 +17,8 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.squirrel.framework.SquirrelInitializer;
-import org.squirrel.framework.auth.annotation.Auth;
-import org.squirrel.framework.auth.AuthMenuLoader;
+import org.squirrel.framework.auth.annotation.Authority;
+import org.squirrel.framework.auth.AuthorityMenuLoader;
 import org.squirrel.framework.database.page.BasePage;
 import org.squirrel.framework.response.Rp;
 import org.squirrel.framework.response.RpEnum;
@@ -79,7 +79,7 @@ public abstract class AbstractBaseController<T> implements BaseController<T>, Sq
 	}
 
 	@Deprecated // 仅测试使用
-	@Auth(AuthMenuLoader.ADD)
+	@Authority(AuthorityMenuLoader.ADD)
 	@ApiOperation(value = "新增批量")
 	@PostMapping(value = "addba")
 	@Override
@@ -88,7 +88,7 @@ public abstract class AbstractBaseController<T> implements BaseController<T>, Sq
 		return add;
 	}
 
-	@Auth(AuthMenuLoader.ADD)
+	@Authority(AuthorityMenuLoader.ADD)
 	@ApiOperation(value = "新增")
 	@PostMapping(value = ADD)
 	@Override
@@ -104,7 +104,7 @@ public abstract class AbstractBaseController<T> implements BaseController<T>, Sq
 		return getBaseService().insert(t);
 	}
 
-	@Auth(AuthMenuLoader.EDIT)
+	@Authority(AuthorityMenuLoader.EDIT)
 	@ApiOperation(value = "修改")
 	@PutMapping(value = EDIT)
 	@Override
@@ -120,7 +120,7 @@ public abstract class AbstractBaseController<T> implements BaseController<T>, Sq
 		return getBaseService().update(t);
 	}
 
-	@Auth(AuthMenuLoader.DEL)
+	@Authority(AuthorityMenuLoader.DEL)
 	@ApiOperation(value = "删除")
 	@DeleteMapping(value = DEL)
 	@Override
@@ -128,7 +128,7 @@ public abstract class AbstractBaseController<T> implements BaseController<T>, Sq
 		return getBaseService().delete(ids);
 	}
 
-	@Auth(AuthMenuLoader.GET)
+	@Authority(AuthorityMenuLoader.GET)
 	@ApiOperation(value = "获取列表")
 	@GetMapping(value = LIST)
 	@Override
@@ -141,7 +141,7 @@ public abstract class AbstractBaseController<T> implements BaseController<T>, Sq
 		return getBaseService().select(query, "");
 	}
 	
-	@Auth(AuthMenuLoader.GET)
+	@Authority(AuthorityMenuLoader.GET)
 	@ApiOperation(value = "获取分页")
 	@GetMapping(value = PAGE)
 //	@Override

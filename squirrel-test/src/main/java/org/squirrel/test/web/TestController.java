@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.squirrel.framework.auth.annotation.Auth;
+import org.squirrel.framework.auth.annotation.Authority;
 import org.squirrel.framework.cache.BaseCache;
 
 import io.swagger.annotations.Api;
@@ -58,7 +58,7 @@ public class TestController {
 //		}
 //		return testService.list(param);
 //	}
-	@Auth("test2")
+	@Authority("test2")
 	@GetMapping("alive2/{id}")
 	public String test2(@PathVariable String id) {
 		return "test api2";

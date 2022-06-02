@@ -9,16 +9,16 @@ import java.util.List;
  * @time   2021年1月21日
  * @version 1.0
  */
-public class AuthMenu {
+public class AuthorityMenu {
 
 	private String id; // 若是类为@RequestMapping值，若是方法则为@Auth值
 	private String name; // 翻译
 	private String type; // 0：普通菜单，1：uri菜单
 	private String uri; // uri菜单的地址
 	private String method; // uri菜单的请求方式
-	private List<AuthMenu> children;
+	private List<AuthorityMenu> children;
 
-	public AuthMenu(String id, String name, String type, String uri, String method) {
+	public AuthorityMenu(String id, String name, String type, String uri, String method) {
 		this.id = id;
 		this.name = name;
 		this.type = type;
@@ -30,7 +30,7 @@ public class AuthMenu {
 	public String getId() {
 		return id;
 	}
-	public AuthMenu setId(String id) {
+	public AuthorityMenu setId(String id) {
 		this.id = id;
 		return this;
 	}
@@ -38,15 +38,15 @@ public class AuthMenu {
 	public String getName() {
 		return name;
 	}
-	public AuthMenu setName(String name) {
+	public AuthorityMenu setName(String name) {
 		this.name = name;
 		return this;
 	}
 	
-	public List<AuthMenu> getChildren() {
+	public List<AuthorityMenu> getChildren() {
 		return children;
 	}
-	public AuthMenu setChildren(List<AuthMenu> children) {
+	public AuthorityMenu setChildren(List<AuthorityMenu> children) {
 		this.children = children;
 		return this;
 	}
@@ -54,7 +54,7 @@ public class AuthMenu {
 	public String getType() {
 		return type;
 	}
-	public AuthMenu setType(String type) {
+	public AuthorityMenu setType(String type) {
 		this.type = type;
 		return this;
 	}
@@ -62,7 +62,7 @@ public class AuthMenu {
 	public String getMethod() {
 		return method;
 	}
-	public AuthMenu setMethod(String method) {
+	public AuthorityMenu setMethod(String method) {
 		this.method = method;
 		return this;
 	}
@@ -70,7 +70,7 @@ public class AuthMenu {
 	public String getUri() {
 		return uri;
 	}
-	public AuthMenu setUri(String uri) {
+	public AuthorityMenu setUri(String uri) {
 		this.uri = uri;
 		return this;
 	}
@@ -91,7 +91,7 @@ public class AuthMenu {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		AuthMenu other = (AuthMenu) obj;
+		AuthorityMenu other = (AuthorityMenu) obj;
 		if (id == null) {
 			if (other.id != null)
 				return false;

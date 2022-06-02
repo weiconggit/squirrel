@@ -7,17 +7,17 @@ import java.util.Set;
  * @time   2021年1月21日
  * @version 1.0
  */
-public class AuthUser {
+public class AuthorityUser {
 
-	private String id;
-	private String name;
-	private Set<String> menuIds;
+	private String id; // 数据id
+	private String name; // 用户名、昵称
+	private Set<String> menuIds; // 权限菜单id集
 
 	public String getId() {
 		return id;
 	}
 
-	public AuthUser setId(String id) {
+	public AuthorityUser setId(String id) {
 		this.id = id;
 		return this;
 	}
@@ -26,7 +26,7 @@ public class AuthUser {
 		return name;
 	}
 
-	public AuthUser setName(String name) {
+	public AuthorityUser setName(String name) {
 		this.name = name;
 		return this;
 	}
@@ -36,7 +36,7 @@ public class AuthUser {
 		return menuIds;
 	}
 
-	public AuthUser setMenuIds(Set<String> menuIds) {
+	public AuthorityUser setMenuIds(Set<String> menuIds) {
 		this.menuIds = menuIds;
 		return this;
 	}
