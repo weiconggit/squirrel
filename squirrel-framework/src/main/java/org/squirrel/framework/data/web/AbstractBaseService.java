@@ -1,10 +1,10 @@
-package org.squirrel.framework.database;
+package org.squirrel.framework.data.web;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
 import org.squirrel.framework.SquirrelInitializer;
-import org.squirrel.framework.database.data.DataConstant;
+import org.squirrel.framework.data.DataConstant;
 import org.squirrel.framework.spring.ApplicationContextHelper;
 import org.squirrel.framework.util.StrUtil;
 

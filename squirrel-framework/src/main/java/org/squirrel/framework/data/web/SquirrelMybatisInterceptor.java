@@ -1,4 +1,4 @@
-package org.squirrel.framework.database.page;
+package org.squirrel.framework.data.web;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -26,8 +26,6 @@ import org.slf4j.LoggerFactory;
  */
 @Intercepts({
 	@Signature(type = StatementHandler.class, method = "prepare", args = {Connection.class, Integer.class})
-//	@Signature(type = ResultSetHandler.class, method = "handleResultSets", args = {Statement.class})
-//	@Signature(type = Executor.class, method = "query", args = {Statement.class})
 	})
 public class SquirrelMybatisInterceptor implements Interceptor {
 
@@ -35,45 +33,29 @@ public class SquirrelMybatisInterceptor implements Interceptor {
 
     @Override
     public Object intercept(Invocation invocation) throws Throwable {
-//    	Object target = invocation.getTarget();
-//    	if (target instanceof StatementHandler) {
-    		StatementHandler statementHandler = (StatementHandler)invocation.getTarget();
-    		MetaObject metaObject = SystemMetaObject.forObject(statementHandler);
-    		ParameterHandler parameterHandler = (ParameterHandler)metaObject.getValue("delegate.parameterHandler");
-    		@SuppressWarnings("unchecked")
-			Map<String, Object> params = (Map<String, Object>)parameterHandler.getParameterObject();
-    		BasePage<?> basePage = null;
-    		for (Object param : params.values()) {
-				if (param instanceof BasePage) {
-					basePage = (BasePage<?>)param;
-					break;
-				}
+		StatementHandler statementHandler = (StatementHandler)invocation.getTarget();
+		MetaObject metaObject = SystemMetaObject.forObject(statementHandler);
+		ParameterHandler parameterHandler = (ParameterHandler)metaObject.getValue("delegate.parameterHandler");
+		@SuppressWarnings("unchecked")
+		Map<String, Object> params = (Map<String, Object>)parameterHandler.getParameterObject();
+		// 从方法参数中寻找BasePage对象，若有则开启分页查询
+		BasePage<?> basePage = null;
+		for (Object param : params.values()) {
+			if (param instanceof BasePage) {
+				basePage = (BasePage<?>)param;
+				break;
 			}
-    		if (basePage != null) {
-    			String pageSql = (String) metaObject.getValue("delegate.boundSql.sql");
-    			Integer total = getTotal(invocation, statementHandler, pageSql);
-    			if (total != null && total != 0) {
-    				basePage.setTotal(total);
-    				pageSql += " limit "+ basePage.getOffset() + "," + basePage.getLimit();
-    				metaObject.setValue("delegate.boundSql.sql", pageSql);
-				}
+		}
+		if (basePage != null) {
+			String pageSql = (String) metaObject.getValue("delegate.boundSql.sql");
+			int total = getTotal(invocation, statementHandler, pageSql);
+			if (total != 0) {
+				basePage.setTotal(total);
+				pageSql += " limit "+ basePage.getOffset() + "," + basePage.getLimit();
+				metaObject.setValue("delegate.boundSql.sql", pageSql);
 			}
-			return invocation.proceed();
-//		} 
-//    	else if (target instanceof ResultSetHandler) {
-//    		Executor.class.getSimpleName();
-//    		Object proceed = invocation.proceed();
-//    		if (proceed instanceof List) {
-//    			List list = (List)proceed;
-//				BasePage<?> basePage = new BasePage<>(1, 2);
-//				basePage.setList(list);
-//				return basePage;
-//			}
-//    		return proceed;
-//		} 
-//		else {
-//			return invocation.proceed();
-//		}
+		}
+		return invocation.proceed();
     }
     
     /**
@@ -83,12 +65,13 @@ public class SquirrelMybatisInterceptor implements Interceptor {
      * @param sql
      * @return
      */
-    private Integer getTotal(Invocation invocation, StatementHandler statementHandler, String sql) {
+    private int getTotal(Invocation invocation, StatementHandler statementHandler, String sql) {
         Connection connection = (Connection) invocation.getArgs()[0];
+        // 从sql结果中再次查询就是总数
         String countSql = "select count(0) from (" + sql + ") as total";
         PreparedStatement ps = null;
         ResultSet rs = null;
-        Integer total = 0;
+        int total = 0;
         try {
         	ps = connection.prepareStatement(countSql);
         	statementHandler.getParameterHandler().setParameters(ps);

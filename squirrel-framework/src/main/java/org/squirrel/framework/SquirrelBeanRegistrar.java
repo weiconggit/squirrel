@@ -19,7 +19,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.squirrel.framework.cache.BaseCache;
 import org.squirrel.framework.cache.LocalBaseCache;
 import org.squirrel.framework.cache.RedissonBaseCache;
-import org.squirrel.framework.database.page.SquirrelMybatisInterceptor;
+import org.squirrel.framework.data.web.SquirrelMybatisInterceptor;
 import org.squirrel.framework.util.ClassUtil;
 import org.squirrel.framework.util.StrUtil;
 import org.squirrel.framework.validate.ValidatorHelper;

@@ -1,4 +1,4 @@
-package org.squirrel.framework.database.data;
+package org.squirrel.framework.data;
 
 /**
  * @description 数据操作类型枚举

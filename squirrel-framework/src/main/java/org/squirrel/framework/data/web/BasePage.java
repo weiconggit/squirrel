@@ -1,10 +1,9 @@
-package org.squirrel.framework.database.page;
+package org.squirrel.framework.data.web;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @description 
+ * @description 基础分页
  * @author weicong
  * @time   2022年2月6日
  * @version 1.0
@@ -28,15 +27,19 @@ public class BasePage<T> {
 	public final Integer getCurrent() {
 		return current;
 	}
-//	public final void setCurrent(Integer current) {
-//		this.current = current;
-//	}
+
 	public final Integer getLimit() {
 		return limit;
 	}
-//	public final void setLimit(Integer limit) {
-//		this.limit = limit;
-//	}
+
+	public Integer getOffset() {
+		return offset;
+	}
+
+	public Integer getPageSize() {
+		return pageSize;
+	}
+
 	public final Integer getTotal() {
 		return total;
 	}
@@ -58,25 +61,16 @@ public class BasePage<T> {
 	public final void setList(List<T> list) {
 		this.list = list;
 	}
-	public Integer getPageSize() {
-		return pageSize;
-	}
-//	public void setPageSize(Integer pageSize) {
-//		this.pageSize = pageSize;
-//	}
 
-	public Integer getOffset() {
-		return offset;
+	@Override
+	public String toString() {
+		return "BasePage{" +
+				"current=" + current +
+				", limit=" + limit +
+				", offset=" + offset +
+				", pageSize=" + pageSize +
+				", total=" + total +
+				", list=" + list +
+				'}';
 	}
-//	public void setOffset(Integer offset) {
-//		this.offset = offset;
-//	}
-
-//	@Override
-//	public String toString() {
-//		return "BasePage [current=" + current + ", limit=" + limit + ", offset=" + offset + ", pageSize=" + pageSize
-//				+ ", total=" + total + ", list=" + list + "]";
-//	}
-	
-	
 }

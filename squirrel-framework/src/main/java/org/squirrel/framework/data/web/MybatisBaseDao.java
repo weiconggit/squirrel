@@ -1,4 +1,4 @@
-package org.squirrel.framework.database;
+package org.squirrel.framework.data.web;
 
 import java.util.List;
 
@@ -7,8 +7,7 @@ import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
-import org.squirrel.framework.database.page.BasePage;
-import org.squirrel.framework.database.data.DataOperatorParam;
+import org.squirrel.framework.data.DataOperatorParam;
 
 /**
  * @description mybatis通用Dao

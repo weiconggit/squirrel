@@ -1,4 +1,4 @@
-package org.squirrel.framework.database;
+package org.squirrel.framework.data.web;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.squirrel.framework.database.page.BasePage;
-import org.squirrel.framework.database.data.DataOperatorEnum;
+import org.squirrel.framework.data.DataOperator;
+import org.squirrel.framework.data.DataOperatorEnum;
 import org.squirrel.framework.response.Rp;
 
 public interface BaseService<T> extends DataOperator<T> {

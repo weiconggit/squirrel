@@ -1,7 +1,7 @@
 package org.squirrel.sys.user;
 
 import org.springframework.stereotype.Repository;
-import org.squirrel.framework.database.BaseDao;
+import org.squirrel.framework.data.web.BaseDao;
 
 /**
  * <p>用户信息 Mapper</p>

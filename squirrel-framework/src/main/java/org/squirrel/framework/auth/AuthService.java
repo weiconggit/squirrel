@@ -1,7 +1,5 @@
 package org.squirrel.framework.auth;
 
-import org.squirrel.framework.database.BaseService;
-
 /**
 * @description
 * @author weicong

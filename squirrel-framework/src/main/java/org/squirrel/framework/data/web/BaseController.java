@@ -1,4 +1,4 @@
-package org.squirrel.framework.database;
+package org.squirrel.framework.data.web;
 
 import java.util.List;
 import java.util.Map;

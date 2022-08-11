@@ -1,4 +1,4 @@
-package org.squirrel.framework.database.data;
+package org.squirrel.framework.data;
 
 import org.squirrel.framework.SquirrelProperties;
 

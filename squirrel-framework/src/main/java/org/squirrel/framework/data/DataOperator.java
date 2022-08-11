@@ -1,6 +1,6 @@
-package org.squirrel.framework.database;
+package org.squirrel.framework.data;
 
-import org.squirrel.framework.database.page.BasePage;
+import org.squirrel.framework.data.web.BasePage;
 import org.squirrel.framework.response.Rp;
 
 import java.util.List;

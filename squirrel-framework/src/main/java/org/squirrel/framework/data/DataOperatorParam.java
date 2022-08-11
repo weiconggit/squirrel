@@ -1,4 +1,4 @@
-package org.squirrel.framework.database.data;
+package org.squirrel.framework.data;
 
 import java.util.ArrayList;
 import java.util.List;

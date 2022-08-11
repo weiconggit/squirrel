@@ -5,7 +5,7 @@ import javax.annotation.Resource;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.squirrel.framework.auth.annotation.Authority;
-import org.squirrel.framework.database.AbstractBaseController;
+import org.squirrel.framework.data.web.AbstractBaseController;
 
 import io.swagger.annotations.Api;
 
