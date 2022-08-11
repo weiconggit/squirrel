@@ -1,7 +1,7 @@
 package org.squirrel.test.web;
 
 import org.springframework.stereotype.Repository;
-import org.squirrel.framework.data.web.BaseDao;
+import org.squirrel.framework.data.BaseDao;
 import org.squirrel.sys.user.UserVO;
 
 /**

@@ -8,14 +8,11 @@ package org.squirrel.framework.data;
  */
 public enum DataOperatorEnum {
 
-    INSERT("insert"),
-    UPDATE("update"),
-    DELETE("delete"),
-	SELECT("delete");
+    INSERT,
+    INSERT_BATCH,
+    UPDATE,
+    UPDATE_BATCH,
+    DELETE,
+    SELECT;
 
-    private String type;
-
-    DataOperatorEnum(String type){
-        this.type = type;
-    }
 }

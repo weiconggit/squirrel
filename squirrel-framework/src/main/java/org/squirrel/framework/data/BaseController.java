@@ -1,4 +1,4 @@
-package org.squirrel.framework.data.web;
+package org.squirrel.framework.data;
 
 import java.util.List;
 import java.util.Map;
@@ -17,8 +17,6 @@ public interface BaseController<T> {
 	BaseService<T> getBaseService();
 	
     Rp<T> add(T t);
-
-    Rp<T> add(List<T> list);
 
     Rp<T> edit(String id, T t);
 

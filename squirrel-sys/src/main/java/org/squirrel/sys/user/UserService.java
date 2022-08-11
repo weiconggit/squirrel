@@ -1,7 +1,7 @@
 package org.squirrel.sys.user;
 
 import org.springframework.stereotype.Service;
-import org.squirrel.framework.data.web.AbstractBaseService;
+import org.squirrel.framework.data.AbstractBaseService;
 
 import javax.annotation.Resource;
 

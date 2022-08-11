@@ -1,4 +1,4 @@
-package org.squirrel.framework.data.web;
+package org.squirrel.framework.data;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -81,9 +81,8 @@ public abstract class AbstractBaseController<T> implements BaseController<T>, Sq
 	@Authority(AuthorityMenuLoader.ADD)
 	@ApiOperation(value = "新增批量")
 	@PostMapping(value = "addba")
-	@Override
-	public Rp<T> add(@RequestBody List<T> t) {
-		Rp<T> add = getBaseService().insert(t);
+	public Rp<List<T>> add(@RequestBody List<T> t) {
+		Rp<List<T>> add = getBaseService().insertBatch(t);
 		return add;
 	}
 
@@ -124,7 +123,7 @@ public abstract class AbstractBaseController<T> implements BaseController<T>, Sq
 	@DeleteMapping(value = DEL)
 	@Override
 	public Rp<T> remove(@PathVariable(value = "ids") Set<String> ids) {
-		return getBaseService().delete(ids);
+		return getBaseService().deleteByIds(ids);
 	}
 
 	@Authority(AuthorityMenuLoader.GET)
@@ -151,7 +150,7 @@ public abstract class AbstractBaseController<T> implements BaseController<T>, Sq
 		}
 //		query.put(ISDEL, false);
 		// TODO sort
-		return getBaseService().page(query, current, limit, "");
+		return getBaseService().page(query, "", current, limit);
 	}
 	
 	protected String afterValidate(T data) {

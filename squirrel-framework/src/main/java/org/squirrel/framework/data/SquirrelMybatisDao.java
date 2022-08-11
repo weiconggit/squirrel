@@ -1,4 +1,4 @@
-package org.squirrel.framework.data.web;
+package org.squirrel.framework.data;
 
 import java.util.List;
 
@@ -7,7 +7,6 @@ import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
-import org.squirrel.framework.data.DataOperatorParam;
 
 /**
  * @description mybatis通用Dao
@@ -15,7 +14,7 @@ import org.squirrel.framework.data.DataOperatorParam;
  * @time   2021年7月24日
  * @version 1.0
  */
-public interface MybatisBaseDao<T> {
+public interface SquirrelMybatisDao<T> {
 
 	/**
 	 * 单条或批量插入

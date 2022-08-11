@@ -1,4 +1,4 @@
-package org.squirrel.framework.data.web;
+package org.squirrel.framework.data;
 
 import java.util.List;
 

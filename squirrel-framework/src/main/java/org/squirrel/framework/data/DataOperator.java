@@ -1,6 +1,5 @@
 package org.squirrel.framework.data;
 
-import org.squirrel.framework.data.web.BasePage;
 import org.squirrel.framework.response.Rp;
 
 import java.util.List;
@@ -17,17 +16,21 @@ public interface DataOperator<T> {
 
     Rp<T> insert(T t);
 
-    Rp<T> insert(List<T> list);
+    Rp<List<T>> insertBatch(List<T> list);
 
     Rp<T> update(T t);
 
-    Rp<T> delete(Set<String> ids);
+    Rp<List<T>> updateBatch(List<T> list);
+
+    Rp<T> deleteByIds(Set<String> ids);
     
-    Rp<T> detail(String id);
+    Rp<T> selectById(String id);
+
+    Rp<List<T>> selectByIds(Set<String> ids);
 
     Rp<List<T>> select(Map<String, Object> query, String sort);
 
-    Rp<BasePage<T>> page(Map<String, Object> query, Integer current, Integer limit, String sort) ;
+    Rp<BasePage<T>> page(Map<String, Object> query, String sort, Integer current, Integer limit) ;
 
     
 }
