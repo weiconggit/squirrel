@@ -22,15 +22,17 @@ public interface DataOperator<T> {
 
     Rp<List<T>> updateBatch(List<T> list);
 
+    Rp<T> delete(Map<String, Object> map);
+
     Rp<T> deleteByIds(Set<String> ids);
-    
+
     Rp<T> selectById(String id);
 
     Rp<List<T>> selectByIds(Set<String> ids);
 
-    Rp<List<T>> select(Map<String, Object> query, String sort);
+    Rp<List<T>> select(Map<String, Object> map, String sort);
 
-    Rp<BasePage<T>> page(Map<String, Object> query, String sort, Integer current, Integer limit) ;
+    Rp<BasePage<T>> page(Map<String, Object> map, String sort, Integer current, Integer limit) ;
 
     
 }

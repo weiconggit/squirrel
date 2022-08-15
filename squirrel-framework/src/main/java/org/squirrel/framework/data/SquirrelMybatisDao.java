@@ -1,12 +1,10 @@
 package org.squirrel.framework.data;
 
-import java.util.List;
+import org.apache.ibatis.annotations.*;
 
-import org.apache.ibatis.annotations.Delete;
-import org.apache.ibatis.annotations.Insert;
-import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
-import org.apache.ibatis.annotations.Update;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @description mybatis通用Dao
@@ -16,24 +14,68 @@ import org.apache.ibatis.annotations.Update;
  */
 public interface SquirrelMybatisDao<T> {
 
+
 	/**
-	 * 单条或批量插入
-	 * @param param
+	 * 单条插入
+	 * @param tableName
+	 * @param insertKeys  (key1,key2,...)
+	 * @param insertValues (value1,value2...)
 	 * @return
 	 */
 	@Insert("<script>"
-			+ "INSERT INTO ${param.tableName} "
-			+ "<foreach item=\"item\" collection=\"param.insertKeys\" separator=\",\" open=\"(\" close=\")\" index=\"\">"
+			+ "INSERT INTO ${tableName} "
+			+ "<foreach item=\"item\" collection=\"insertKeys\" separator=\",\" open=\"(\" close=\")\" index=\"\">"
 				+ "${item}"
 			+ "</foreach>"
 			+ " VALUES "
-			+ "<foreach item=\"itemList\" collection=\"param.values\" separator=\",\" open=\"\" close=\"\" index=\"\">"
+			+ "<foreach item=\"item\" collection=\"insertValues\" separator=\",\" open=\"(\" close=\")\" index=\"\">"
+				+ "#{item}"
+			+ "</foreach>"
+			+ "</script>")
+	int insert(@Param("tableName") String tableName, @Param("insertKeys") List<String> insertKeys, @Param("insertValues") List<Object> insertValues);
+
+
+	/**
+	 * 批量插入
+	 * @param tableName
+	 * @param insertKeys (key1,key2,...)
+	 * @param insertValues (value1,value2...),(value1,value2...)
+	 * @return
+	 */
+	@Insert("<script>"
+			+ "INSERT INTO ${tableName} "
+			+ "<foreach item=\"item\" collection=\"insertKeys\" separator=\",\" open=\"(\" close=\")\" index=\"\">"
+				+ "${item}"
+			+ "</foreach>"
+			+ " VALUES "
+			+ "<foreach item=\"itemList\" collection=\"insertValues\" separator=\",\" open=\"\" close=\"\" index=\"\">"
 				+ "<foreach item=\"item\" collection=\"itemList\" separator=\",\" open=\"(\" close=\")\" index=\"\">"
 					+ "#{item}"
 				+ "</foreach>"
 			+ "</foreach>"
 			+ "</script>")
-	int insert(@Param("param") DataOperatorParam param);
+	int insertBatch(@Param("tableName") String tableName, @Param("insertKeys") List<String> insertKeys, @Param("insertValues") List<List<Object>> insertValues);
+
+	/**
+	 * TODO
+	 * 无ID新增，有ID更新
+	 * @param param
+	 * @return
+	 */
+	@Update("<script>"
+			+ "UPDATE ${tableName} SET "
+			+ "<foreach collection=\"setKeyValues.entrySet()\" separator=\"\" open=\"\" close=\"\" index=\"key\" item=\"item\">"
+			+ "${key} = #{item}"
+			+ "</foreach>"
+			+ "<where>"
+			+ "<foreach collection=\"whereKeyValues.entrySet()\" separator=\"\" open=\"\" close=\"\" index=\"key\" item=\"item\">"
+			+ "<if test=\"item.value != null\">"
+			+ "AND ${key} = #{item}"
+			+ "</if>"
+			+ "</foreach>"
+			+ "</where>"
+			+ "</script>")
+	int insertOnDuplicateKeyUpdate(@Param("tableName") String tableName, @Param("setKeyValues") Map<String, Object> setKeyValues, @Param("whereKeyValues") Map<String, Object> whereKeyValues);
 
 	/**
 	 * 条件更新
@@ -41,34 +83,34 @@ public interface SquirrelMybatisDao<T> {
 	 * @return
 	 */
 	@Update("<script>"
-			+ "UPDATE ${param.tableName} SET "
-				+ "<foreach item=\"item\" collection=\"param.setKeyValues\" separator=\"\" open=\"\" close=\"\" index=\"\">"
-					+ "${item.key} = #{item.value}"
-				+ "</foreach>"
+			+ "UPDATE ${tableName} SET "
+			+ "<foreach collection=\"setKeyValues.entrySet()\" separator=\"\" open=\"\" close=\"\" index=\"key\" item=\"item\">"
+			+ "${key} = #{item}"
+			+ "</foreach>"
 			+ "<where>"
-				+ "<foreach item=\"item\" collection=\"param.whereKeyValues\" separator=\"\" open=\"\" close=\"\" index=\"\">"
-					+ "<if test=\"item.value != null\">" 
-					+ "AND ${item.key} = #{item.value}" 
-					+ "</if>"
-				+ "</foreach>"
+			+ "<foreach collection=\"whereKeyValues.entrySet()\" separator=\"\" open=\"\" close=\"\" index=\"key\" item=\"item\">"
+			+ "<if test=\"item.value != null\">"
+			+ "AND ${key} = #{item}"
+			+ "</if>"
+			+ "</foreach>"
 			+ "</where>"
 			+ "</script>")
-	int update(@Param("param") DataOperatorParam param);
+	int update(@Param("tableName") String tableName, @Param("setKeyValues") Map<String, Object> setKeyValues, @Param("whereKeyValues") Map<String, Object> whereKeyValues);
 
 	/**
 	 * 条件删除
 	 * @param param
 	 * @return
 	 */
-//	@Delete("<script>"
-//			+ "DELETE FROM ${param.tableName}"
-//			+ "<where>"
-//			+ "<foreach item=\"item\" collection=\"param.whereKeyValues\" separator=\",\" open=\"\" close=\"\" index=\"\">"
-//			+ "AND ${item.key} = #{item.value}"
-//			+ "</foreach>"
-//			+ "</where>"
-//			+ "</script>")
-//	int delete(@Param("param") DataOperatorParam param);
+	@Delete("<script>"
+			+ "DELETE FROM ${tableName}"
+			+ "<where>"
+				+ "<foreach collection=\"whereKeyValues.entrySet()\" separator=\",\" open=\"\" close=\"\" index=\"key\" item=\"item\">"
+					+ "AND ${key} = #{item}"
+				+ "</foreach>"
+			+ "</where>"
+			+ "</script>")
+	int delete(@Param("tableName") String tableName, @Param("whereKeyValues") Map<String, Object> whereKeyValues);
 	
 
 	/**
@@ -77,12 +119,29 @@ public interface SquirrelMybatisDao<T> {
 	 * @return
 	 */
 	@Delete("<script>"
-			+ "DELETE FROM ${param.tableName} WHERE id IN "
-				+ "<foreach item=\"item\" collection=\"param.whereKeyValues\" separator=\",\" open=\"(\" close=\")\" index=\"\">"
-					+ "#{item.value}"
+			+ "DELETE FROM ${tableName} WHERE id IN "
+				+ "<foreach item=\"item\" collection=\"ids\" separator=\",\" open=\"(\" close=\")\" index=\"\">"
+					+ "#{item}"
 				+ "</foreach>"
 			+ "</script>")
-	int deleteByIds(@Param("param") DataOperatorParam param);
+	int deleteByIds(@Param("tableName") String tableName, @Param("ids") Collection<String> ids);
+
+	/**
+	 * 根据
+	 * @param param
+	 * @return
+	 */
+	@Select("<script>"
+			+ "SELECT "
+			+ "<foreach item=\"item\" collection=\"selectKeys\" separator=\",\" open=\"\" close=\"\" index=\"\">"
+				+ "${item}"
+			+ "</foreach> "
+			+ " FROM ${tableName} WHERE id IN "
+			+ "<foreach item=\"item\" collection=\"ids\" separator=\",\" open=\"(\" close=\")\" index=\"\">"
+				+ " #{item}"
+			+ "</foreach>"
+			+ "</script>")
+	List<T> selectByIds(@Param("tableName") String tableName, @Param("selectKeys") List<String> selectKeys, @Param("ids") Collection<String> ids);
 
 	/**
 	 * 查询
@@ -91,35 +150,41 @@ public interface SquirrelMybatisDao<T> {
 	 */
 	@Select("<script>"
 			+ "SELECT "
-				+ "<foreach item=\"item\" collection=\"param.selectKeys\" separator=\",\" open=\"\" close=\"\" index=\"\">"
+				+ "<foreach item=\"item\" collection=\"selectKeys\" separator=\",\" open=\"\" close=\"\" index=\"\">"
 					+ "${item}"
 				+ "</foreach> "
-			+ " FROM ${param.tableName}"
+			+ " FROM ${tableName}"
 			+ "<where>"
-				+ "<foreach item=\"item\" collection=\"param.whereKeyValues\" separator=\",\" open=\"\" close=\"\" index=\"\">"
-					+ "AND ${item.key} = #{item.value}"
+				+ "<foreach collection=\"whereKeyValues.entrySet()\" separator=\",\" open=\"\" close=\"\" index=\"key\" item=\"item\" >"
+					+ "AND ${key} = #{item}"
 				+ "</foreach>"
 			+ "</where>"
 			+ "</script>")
-	List<T> select(@Param("param") DataOperatorParam param);
+	List<T> select(@Param("tableName") String tableName, @Param("selectKeys") List<String> selectKeys, @Param("whereKeyValues") Map<String, Object> whereKeyValues);
 	
 	
 	@Select("<script>"
 			+ "SELECT "
-				+ "<foreach item=\"item\" collection=\"param.selectKeys\" separator=\",\" open=\"\" close=\"\" index=\"\">"
+				+ "<foreach item=\"item\" collection=\"selectKeys\" separator=\",\" open=\"\" close=\"\" index=\"\">"
 					+ "${item}"
 				+ "</foreach> "
-			+ " FROM ${param.tableName}"
+			+ " FROM ${tableName}"
 			+ "<if test=\"param.whereKeyValues != null\">" 
 			+ "<where>"
-				+ "<foreach item=\"item\" collection=\"param.whereKeyValues\" separator=\",\" open=\"\" close=\"\" index=\"\">"
-					+ "AND ${item.key} = #{item.value}"
+				+ "<foreach collection=\"whereKeyValues.entrySet()\" separator=\",\" open=\"\" close=\"\" index=\"key\" item=\"item\">"
+					+ "AND ${key} = #{item}"
 				+ "</foreach>"
 			+ "</where>"
 			+ "</if>"
 			+ "</script>")
-	List<T> page(@Param("page") BasePage<T> page, @Param("param") DataOperatorParam param);
-	
+	List<T> page(@Param("page") BasePage<T> page, @Param("tableName") String tableName, @Param("selectKeys") List<String> selectKeys, @Param("whereKeyValues") Map<String, Object> whereKeyValues);
+
+
+
+
+
+
+
 	// select count(1) from table where is_active is null;
 	// SELECT * FROM product a JOIN (select id from product limit 866613, 20) b ON a.ID = b.id
 	/**

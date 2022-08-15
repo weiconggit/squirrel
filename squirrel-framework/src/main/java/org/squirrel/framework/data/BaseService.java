@@ -1,11 +1,13 @@
 package org.squirrel.framework.data;
 
-import java.util.*;
-
 import org.springframework.transaction.annotation.Transactional;
 import org.squirrel.framework.response.Rp;
 
 import javax.annotation.Nullable;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public interface BaseService<T> extends DataOperator<T> {
 
@@ -57,8 +59,20 @@ public interface BaseService<T> extends DataOperator<T> {
 
 	@Transactional
 	@Override
+	default Rp<T> delete(Map<String, Object> map){
+		List<T> list = beforeDelete(null,map);
+		beforeOperate(DataOperatorEnum.DELETE, null, list);
+		Rp<T> remove = getBaseDao().delete(map);
+		if (remove.isSuccess()) {
+			afterOperate(DataOperatorEnum.DELETE, null, list);
+		}
+		return remove;
+	}
+
+	@Transactional
+	@Override
 	default Rp<T> deleteByIds(Set<String> ids){
-		List<T> list = beforeDelete(ids);
+		List<T> list = beforeDelete(ids,null);
 		beforeOperate(DataOperatorEnum.DELETE, null, list);
 		Rp<T> remove = getBaseDao().deleteByIds(ids);
 		if (remove.isSuccess()) {
@@ -104,7 +118,7 @@ public interface BaseService<T> extends DataOperator<T> {
 	default void beforeOperate(DataOperatorEnum dataOpEnum, @Nullable T t, @Nullable List<T> list){};
 	default void afterOperate(DataOperatorEnum dataOpEnum, @Nullable T t, @Nullable List<T> list){};
 
-	default List<T> beforeDelete(Set<String> ids){return  Collections.emptyList();};
+	default List<T> beforeDelete(@Nullable Set<String> ids, @Nullable Map<String, Object> map){return Collections.emptyList();};
 
 	default void beforeSelect(Map<String, Object> query){};
 	default void afterSelect(DataOperatorEnum dataOpEnum, @Nullable T t, @Nullable List<T> list){};
