@@ -3,6 +3,7 @@ package org.squirrel.framework.data;
 import org.apache.ibatis.annotations.*;
 
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -17,7 +18,7 @@ public interface SquirrelMybatisDao<T> {
 
 	/**
 	 * 单条插入
-	 * @param tableName
+	 * @param tableName 表名
 	 * @param insertKeys  (key1,key2,...)
 	 * @param insertValues (value1,value2...)
 	 * @return
@@ -37,7 +38,7 @@ public interface SquirrelMybatisDao<T> {
 
 	/**
 	 * 批量插入
-	 * @param tableName
+	 * @param tableName 表名
 	 * @param insertKeys (key1,key2,...)
 	 * @param insertValues (value1,value2...),(value1,value2...)
 	 * @return
@@ -56,35 +57,37 @@ public interface SquirrelMybatisDao<T> {
 			+ "</script>")
 	int insertBatch(@Param("tableName") String tableName, @Param("insertKeys") List<String> insertKeys, @Param("insertValues") List<List<Object>> insertValues);
 
-	/**
-	 * TODO
-	 * 无ID新增，有ID更新
-	 * @param param
-	 * @return
-	 */
-	@Update("<script>"
-			+ "UPDATE ${tableName} SET "
-			+ "<foreach collection=\"setKeyValues.entrySet()\" separator=\"\" open=\"\" close=\"\" index=\"key\" item=\"item\">"
-			+ "${key} = #{item}"
-			+ "</foreach>"
-			+ "<where>"
-			+ "<foreach collection=\"whereKeyValues.entrySet()\" separator=\"\" open=\"\" close=\"\" index=\"key\" item=\"item\">"
-			+ "<if test=\"item.value != null\">"
-			+ "AND ${key} = #{item}"
-			+ "</if>"
-			+ "</foreach>"
-			+ "</where>"
-			+ "</script>")
-	int insertOnDuplicateKeyUpdate(@Param("tableName") String tableName, @Param("setKeyValues") Map<String, Object> setKeyValues, @Param("whereKeyValues") Map<String, Object> whereKeyValues);
+//	/**
+//	 * TODO
+//	 * 无ID新增，有ID更新
+//	 * @param param
+//	 * @return
+//	 */
+//	@Update("<script>"
+//			+ "UPDATE ${tableName} SET "
+//			+ "<foreach collection=\"setKeyValues.entrySet()\" separator=\"\" open=\"\" close=\"\" index=\"key\" item=\"item\">"
+//			+ "${key} = #{item}"
+//			+ "</foreach>"
+//			+ "<where>"
+//			+ "<foreach collection=\"whereKeyValues.entrySet()\" separator=\"\" open=\"\" close=\"\" index=\"key\" item=\"item\">"
+//			+ "<if test=\"item.value != null\">"
+//			+ "AND ${key} = #{item}"
+//			+ "</if>"
+//			+ "</foreach>"
+//			+ "</where>"
+//			+ "</script>")
+//	int insertOnDuplicateKeyUpdate(@Param("tableName") String tableName, @Param("setKeyValues") Map<String, Object> setKeyValues, @Param("whereKeyValues") Map<String, Object> whereKeyValues);
 
 	/**
 	 * 条件更新
-	 * @param param
+	 * @param tableName 表名
+	 * @param setKeyValues key1 = value1,key2 = value2
+	 * @param whereKeyValues WHERE keyA = valueA AND keyB = valueB ...
 	 * @return
 	 */
 	@Update("<script>"
 			+ "UPDATE ${tableName} SET "
-			+ "<foreach collection=\"setKeyValues.entrySet()\" separator=\"\" open=\"\" close=\"\" index=\"key\" item=\"item\">"
+			+ "<foreach collection=\"setKeyValues.entrySet()\" separator=\",\" open=\"\" close=\"\" index=\"key\" item=\"item\">"
 			+ "${key} = #{item}"
 			+ "</foreach>"
 			+ "<where>"
@@ -99,7 +102,8 @@ public interface SquirrelMybatisDao<T> {
 
 	/**
 	 * 条件删除
-	 * @param param
+	 * @param tableName 表名
+	 * @param whereKeyValues WHERE keyA = valueA AND keyB = valueB ...
 	 * @return
 	 */
 	@Delete("<script>"
@@ -115,7 +119,8 @@ public interface SquirrelMybatisDao<T> {
 
 	/**
 	 * ids删除
-	 * @param param
+	 * @param tableName 表名
+	 * @param ids
 	 * @return
 	 */
 	@Delete("<script>"
@@ -127,8 +132,10 @@ public interface SquirrelMybatisDao<T> {
 	int deleteByIds(@Param("tableName") String tableName, @Param("ids") Collection<String> ids);
 
 	/**
-	 * 根据
-	 * @param param
+	 * ids查询数据
+	 * @param tableName 表名
+	 * @param selectKeys key1,key2,...
+	 * @param ids
 	 * @return
 	 */
 	@Select("<script>"
@@ -140,12 +147,24 @@ public interface SquirrelMybatisDao<T> {
 			+ "<foreach item=\"item\" collection=\"ids\" separator=\",\" open=\"(\" close=\")\" index=\"\">"
 				+ " #{item}"
 			+ "</foreach>"
+			+ "<if test=\"sortMap != null \">"
+				+ "ORDER BY "
+				+ "<foreach collection=\"sortMap.entrySet()\" separator=\",\" open=\"\" close=\"\" index=\"key\" item=\"item\">"
+				+ "${key} = #{item}"
+				+ "</foreach>"
+			+ "</if>"
 			+ "</script>")
-	List<T> selectByIds(@Param("tableName") String tableName, @Param("selectKeys") List<String> selectKeys, @Param("ids") Collection<String> ids);
+	List<T> selectByIds(@Param("tableName") String tableName,
+						@Param("selectKeys") List<String> selectKeys,
+						@Param("ids") Collection<String> ids,
+						@Param("sortMap") LinkedHashMap<String, String> sortMap);
 
 	/**
 	 * 查询
-	 * @param param
+	 * @param tableName 表名
+	 * @param selectKeys key1,key2,...
+	 * @param whereMap WHERE keyA = valueA AND keyB = valueB ...
+	 * @param sortMap 排序
 	 * @return
 	 */
 	@Select("<script>"
@@ -154,30 +173,59 @@ public interface SquirrelMybatisDao<T> {
 					+ "${item}"
 				+ "</foreach> "
 			+ " FROM ${tableName}"
+			+ "<if test=\"whereMap != null\">"
 			+ "<where>"
-				+ "<foreach collection=\"whereKeyValues.entrySet()\" separator=\",\" open=\"\" close=\"\" index=\"key\" item=\"item\" >"
+				+ "<foreach collection=\"whereMap.entrySet()\" separator=\",\" open=\"\" close=\"\" index=\"key\" item=\"item\" >"
 					+ "AND ${key} = #{item}"
 				+ "</foreach>"
 			+ "</where>"
+			+ "</if>"
+			+ "<if test=\"sortMap != null \">"
+				+ "ORDER BY "
+				+ "<foreach collection=\"sortMap.entrySet()\" separator=\",\" open=\"\" close=\"\" index=\"key\" item=\"item\">"
+				+ "${key} = #{item}"
+				+ "</foreach>"
+			+ "</if>"
 			+ "</script>")
-	List<T> select(@Param("tableName") String tableName, @Param("selectKeys") List<String> selectKeys, @Param("whereKeyValues") Map<String, Object> whereKeyValues);
-	
-	
+	List<T> select(@Param("tableName") String tableName,
+				   @Param("selectKeys") List<String> selectKeys,
+				   @Param("whereMap") Map<String, Object> whereMap,
+				   @Param("sortMap") LinkedHashMap<String, String> sortMap);
+
+	/**
+	 * 分页查询
+	 * @param page
+	 * @param tableName 表名
+	 * @param selectKeys key1,key2,...
+	 * @param whereMap WHERE keyA = valueA AND keyB = valueB ...
+	 * @param sortMap ORDER BY keyA ASC, keyB DESC...
+	 * @return
+	 */
 	@Select("<script>"
 			+ "SELECT "
 				+ "<foreach item=\"item\" collection=\"selectKeys\" separator=\",\" open=\"\" close=\"\" index=\"\">"
 					+ "${item}"
 				+ "</foreach> "
 			+ " FROM ${tableName}"
-			+ "<if test=\"param.whereKeyValues != null\">" 
+			+ "<if test=\"whereMap != null\">"
 			+ "<where>"
-				+ "<foreach collection=\"whereKeyValues.entrySet()\" separator=\",\" open=\"\" close=\"\" index=\"key\" item=\"item\">"
+				+ "<foreach collection=\"whereMap.entrySet()\" separator=\",\" open=\"\" close=\"\" index=\"key\" item=\"item\">"
 					+ "AND ${key} = #{item}"
 				+ "</foreach>"
 			+ "</where>"
 			+ "</if>"
+			+ "<if test=\"sortMap != null \">"
+				+ "ORDER BY "
+				+ "<foreach collection=\"sortMap.entrySet()\" separator=\",\" open=\"\" close=\"\" index=\"key\" item=\"item\">"
+				+ "${key} = #{item}"
+				+ "</foreach>"
+			+ "</if>"
 			+ "</script>")
-	List<T> page(@Param("page") BasePage<T> page, @Param("tableName") String tableName, @Param("selectKeys") List<String> selectKeys, @Param("whereKeyValues") Map<String, Object> whereKeyValues);
+	List<T> page(@Param("page") BasePage<T> page,
+				 @Param("tableName") String tableName,
+				 @Param("selectKeys") List<String> selectKeys,
+				 @Param("whereMap") Map<String, Object> whereMap,
+				 @Param("sortMap") LinkedHashMap<String, String> sortMap);
 
 
 
@@ -201,7 +249,7 @@ public interface SquirrelMybatisDao<T> {
 //			+ "</where>"
 //			+ "</script>")
 //	int count(@Param("param") DataOperatorParam param);
-	
+
 	/**
 	 * 分页查询
 	 * @param param

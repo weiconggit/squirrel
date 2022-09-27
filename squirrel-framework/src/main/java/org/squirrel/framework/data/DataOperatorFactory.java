@@ -2,6 +2,7 @@ package org.squirrel.framework.data;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.squirrel.framework.SquirrelProperties;
 import org.squirrel.framework.util.StrUtil;
 
 import java.lang.reflect.Field;
@@ -23,6 +24,12 @@ public final class DataOperatorFactory {
     /// 实体字段信息缓存
     private static final Map<Class<?>, TableCache> paramCacheMap = new ConcurrentHashMap<>();
 
+    public static final String DATA_ID = SquirrelProperties.get("dataId");
+    public static final String DATA_IS_DEL = SquirrelProperties.get("dataIsDel");
+    public static final String DAO_SUFFIX = SquirrelProperties.get("daoSuffix");
+    public static final String SERVICE_SUFFIX = SquirrelProperties.get("serviceSuffix");
+    public static final String BEAN_SUFFIX = SquirrelProperties.get("beanSuffix");
+
     private DataOperatorFactory(){}
 
     /**
@@ -39,7 +46,7 @@ public final class DataOperatorFactory {
             for (Field field : fields) {
                 Object object = field.get(t);
                 String name = field.getName();
-                if (DataConstant.DATA_IS_DEL.equals(name)) {
+                if (DATA_IS_DEL.equals(name)) {
                     continue;
                 }
                 String key = fieldKey.get(name);
@@ -64,7 +71,7 @@ public final class DataOperatorFactory {
         try {
             for (Field field : fields) {
                 // XXX isDel字段的特殊处理
-                if (DataConstant.DATA_IS_DEL.equals(field.getName())) {
+                if (DATA_IS_DEL.equals(field.getName())) {
                     list.add(true);
                 } else {
                     Object object = field.get(t);
@@ -92,7 +99,7 @@ public final class DataOperatorFactory {
                 List<Object> oneObjVals = new ArrayList<>();
                 for (Field field : fields) {
                     // XXX isDel字段的特殊处理
-                    if (DataConstant.DATA_IS_DEL.equals(field.getName())) {
+                    if (DATA_IS_DEL.equals(field.getName())) {
                         oneObjVals.add(true);
                     } else {
                         Object object = field.get(t);

@@ -4,22 +4,26 @@ import org.springframework.transaction.annotation.Transactional;
 import org.squirrel.framework.response.Rp;
 
 import javax.annotation.Nullable;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public interface BaseService<T> extends DataOperator<T> {
 
 	BaseDao<T> getBaseDao();
 
+	// 标识操作方法类型
+	String INSERT = "insert";
+	String INSERT_BATCH = "insertBatch";
+	String UPDATE = "update";
+	String UPDATE_BATCH = "updateBatch";
+	String DELETE = "delete";
+
 	@Transactional
 	@Override
 	default Rp<T> insert(T t){
-		beforeOperate(DataOperatorEnum.INSERT, t, null);
+		beforeOperate(INSERT, t, null);
 		Rp<T> insert = getBaseDao().insert(t);
 		if (insert.isSuccess()){
-			afterOperate(DataOperatorEnum.INSERT, t, null);
+			afterOperate(INSERT, t, null);
 		}
 		return insert;
 	}
@@ -27,10 +31,10 @@ public interface BaseService<T> extends DataOperator<T> {
 	@Transactional
 	@Override
 	default Rp<List<T>> insertBatch(List<T> list){
-		beforeOperate(DataOperatorEnum.INSERT_BATCH,null, list);
+		beforeOperate(INSERT_BATCH,null, list);
 		Rp<List<T>> insert = getBaseDao().insertBatch(list);
 		if (insert.isSuccess()){
-			afterOperate(DataOperatorEnum.INSERT, null, list);
+			afterOperate(INSERT, null, list);
 		}
 		return insert;
 	}
@@ -38,10 +42,10 @@ public interface BaseService<T> extends DataOperator<T> {
 	@Transactional
 	@Override
 	default Rp<T> update(T t){
-		beforeOperate(DataOperatorEnum.UPDATE, t, null);
+		beforeOperate(UPDATE, t, null);
 		Rp<T> update = getBaseDao().update(t);
 		if (update.isSuccess()) {
-			afterOperate(DataOperatorEnum.UPDATE, t, null);
+			afterOperate(UPDATE, t, null);
 		}
 		return update;
 	}
@@ -49,10 +53,10 @@ public interface BaseService<T> extends DataOperator<T> {
 	@Transactional
 	@Override
 	default Rp<List<T>> updateBatch(List<T> list){
-		beforeOperate(DataOperatorEnum.UPDATE_BATCH, null, list);
+		beforeOperate(UPDATE_BATCH, null, list);
 		Rp<List<T>> update = getBaseDao().updateBatch(list);
 		if (update.isSuccess()) {
-			afterOperate(DataOperatorEnum.UPDATE, null, list);
+			afterOperate(UPDATE, null, list);
 		}
 		return update;
 	}
@@ -61,10 +65,10 @@ public interface BaseService<T> extends DataOperator<T> {
 	@Override
 	default Rp<T> delete(Map<String, Object> map){
 		List<T> list = beforeDelete(null,map);
-		beforeOperate(DataOperatorEnum.DELETE, null, list);
+		beforeOperate(DELETE, null, list);
 		Rp<T> remove = getBaseDao().delete(map);
 		if (remove.isSuccess()) {
-			afterOperate(DataOperatorEnum.DELETE, null, list);
+			afterOperate(DELETE, null, list);
 		}
 		return remove;
 	}
@@ -73,10 +77,10 @@ public interface BaseService<T> extends DataOperator<T> {
 	@Override
 	default Rp<T> deleteByIds(Set<String> ids){
 		List<T> list = beforeDelete(ids,null);
-		beforeOperate(DataOperatorEnum.DELETE, null, list);
+		beforeOperate(DELETE, null, list);
 		Rp<T> remove = getBaseDao().deleteByIds(ids);
 		if (remove.isSuccess()) {
-			afterOperate(DataOperatorEnum.DELETE, null, list);
+			afterOperate(DELETE, null, list);
 		}
 		return remove;
 	}
@@ -85,43 +89,53 @@ public interface BaseService<T> extends DataOperator<T> {
 	@Override
 	default Rp<T> selectById(String id){
 		Rp<T> rp = getBaseDao().selectById(id);
-		afterSelect(DataOperatorEnum.SELECT, rp.getData(), null);
+		afterSelect(rp.getData(), null);
 		return rp;
 	}
 
 	@Transactional
 	@Override
-	default Rp<List<T>> selectByIds(Set<String> ids){
-		Rp<List<T>> rp = getBaseDao().selectByIds(ids);
-		afterSelect(DataOperatorEnum.SELECT, null, rp.getData());
+	default Rp<List<T>> selectByIds(Set<String> ids, LinkedHashMap<String, String> sortMap){
+		Rp<List<T>> rp = getBaseDao().selectByIds(ids, sortMap);
+		afterSelect(null, rp.getData());
 		return rp;
 	}
 
 	@Transactional
 	@Override
-	default Rp<List<T>> select(Map<String, Object> query, String sort){
-		beforeSelect(query);
-		Rp<List<T>> select = getBaseDao().select(query, sort);
-		afterSelect(DataOperatorEnum.SELECT, null, select.getData());
+	default Rp<List<T>> select(Map<String, Object> query, LinkedHashMap<String, String> sortMap){
+		query = beforeSelect(query);
+		Rp<List<T>> select = getBaseDao().select(query, sortMap);
+		afterSelect(null, select.getData());
 		return select;
 	}
 
 	@Transactional
 	@Override
-	default Rp<BasePage<T>> page(Map<String, Object> query, String sort, Integer current, Integer limit) {
-		beforeSelect(query);
-		Rp<BasePage<T>> page = getBaseDao().page(query, sort, current, limit);
-		afterSelect(DataOperatorEnum.SELECT, null, page.getData().getList());
+	default Rp<BasePage<T>> page(Map<String, Object> query, Integer current, Integer limit, LinkedHashMap<String, String> sortMap) {
+		query = beforeSelect(query);
+		Rp<BasePage<T>> page = getBaseDao().page(query, current, limit, sortMap);
+		afterSelect(null, page.getData().getList());
 		return page;
 	}
 
-	default void beforeOperate(DataOperatorEnum dataOpEnum, @Nullable T t, @Nullable List<T> list){};
-	default void afterOperate(DataOperatorEnum dataOpEnum, @Nullable T t, @Nullable List<T> list){};
+	default void beforeOperate(String funcType, @Nullable T t, @Nullable List<T> list){}
+	default void afterOperate(String funcType, @Nullable T t, @Nullable List<T> list){}
 
-	default List<T> beforeDelete(@Nullable Set<String> ids, @Nullable Map<String, Object> map){return Collections.emptyList();};
+	default List<T> beforeDelete(@Nullable Set<String> ids, @Nullable Map<String, Object> map){
+		return Collections.emptyList();
+	}
 
-	default void beforeSelect(Map<String, Object> query){};
-	default void afterSelect(DataOperatorEnum dataOpEnum, @Nullable T t, @Nullable List<T> list){};
+	default Map<String, Object> beforeSelect(Map<String, Object> query){
+		if (query == null) {
+			query = new HashMap<>();
+		}
+		// 逻辑删除
+		query.put(DataOperatorFactory.DATA_IS_DEL, false);
+		return Collections.emptyMap();
+	}
+
+	default void afterSelect(@Nullable T t, @Nullable List<T> list){}
 
 
 }

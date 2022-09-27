@@ -2,10 +2,7 @@ package org.squirrel.framework.data;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,11 +44,12 @@ public abstract class AbstractBaseController<T> implements BaseController<T>, Sq
 	protected static final String ADD = "add";
 	protected static final String EDIT = "edit/{id}";
 	protected static final String DEL = "del/{ids}";
-	// 通用逻辑删除标识
-	protected static final String ISDEL = "isdel";
-	// 排序规则关键字
-	private static final String ASC = "asc";
-	private static final String DESC = "desc";
+
+	// 通用排序标识
+	protected static final String SORT_KEY = "sortKey";
+	protected static final String SORT_TYPE = "sortType";
+	protected static final String ASC = "ASC";
+	protected static final String DESC = "DESC";
 	
 	/** oval检验 */
 	private Validator validator;
@@ -127,32 +125,65 @@ public abstract class AbstractBaseController<T> implements BaseController<T>, Sq
 	}
 
 	@Authority(AuthorityMenuLoader.GET)
+	@ApiOperation(value = "明细")
+	@GetMapping(value = DETAIL)
+	@Override
+	public Rp<T> detail(@PathVariable(value = "id") String id) {
+		return getBaseService().selectById(id);
+	}
+
+	@Authority(AuthorityMenuLoader.GET)
 	@ApiOperation(value = "获取列表")
 	@GetMapping(value = LIST)
 	@Override
 	public Rp<List<T>> list(@RequestParam(name = "query", required = false) Map<String, Object> query) {
-		if (query == null) {
-			query = new HashMap<>();
-		}
-		query.put(ISDEL, false);
-		// TODO sort
-		return getBaseService().select(query, "");
+		LinkedHashMap<String, String> sort = getSort(query);
+		return getBaseService().select(query, sort);
 	}
 	
 	@Authority(AuthorityMenuLoader.GET)
 	@ApiOperation(value = "获取分页")
 	@GetMapping(value = PAGE)
-//	@Override
+	@Override
 	public Rp<BasePage<T>> page(@RequestParam(name = "query", required = false) Map<String, Object> query, 
-			@RequestParam(name = "current") Integer current,@RequestParam(name = "limit") Integer limit) {
-		if (query == null) {
-			query = new HashMap<>();
-		}
-//		query.put(ISDEL, false);
-		// TODO sort
-		return getBaseService().page(query, "", current, limit);
+								@RequestParam(name = "current") Integer current,
+								@RequestParam(name = "limit") Integer limit) {
+		LinkedHashMap<String, String> sort = getSort(query);
+		return getBaseService().page(query, current, limit, sort);
 	}
-	
+
+	/**
+	 * 获取排序参数
+	 * @param query
+	 * @return
+	 */
+	protected LinkedHashMap<String, String> getSort(Map<String, Object> query){
+		LinkedHashMap<String, String> sortMap = null;
+		// 检查下是否含有排序字段，用于通用接口的参数
+		if (query != null) {
+			Object sortKeyObj = query.get(SORT_KEY);
+			if (sortKeyObj != null) {
+				sortMap = new LinkedHashMap<>();
+				Object sortTypeObj = query.get(SORT_TYPE);
+				if (sortTypeObj == null) {
+					// 默认为升序
+					sortMap.put(String.valueOf(sortKeyObj), ASC);
+				} else {
+					String sortType = String.valueOf(sortTypeObj);
+					if (ASC.equals(sortType) || DESC.equals(sortType)) {
+						sortMap.put(String.valueOf(sortKeyObj), sortType);
+					}
+				}
+			}
+		}
+		return sortMap;
+	}
+
+	/**
+	 * 通过校验之后的处理
+	 * @param data
+	 * @return 错误信息
+	 */
 	protected String afterValidate(T data) {
 		return null;
 	}

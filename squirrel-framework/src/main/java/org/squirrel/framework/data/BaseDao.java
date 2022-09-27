@@ -50,12 +50,12 @@ public interface BaseDao<T> extends SquirrelMybatisDao<T>, DataOperator<T> {
 		DataOperatorFactory.TableCache tableCache = DataOperatorFactory.getTableCache(beanClass);
 		Map<String, Object> updateValues = DataOperatorFactory.getUpdateValues(t, tableCache);
 		// 确保数据ID存在
-		Object dataId = updateValues.remove(DataConstant.DATA_ID);
+		Object dataId = updateValues.remove(DataOperatorFactory.DATA_ID);
 		if (dataId == null){
 			return Rp.failed(RpEnum.ERROR_PARAMETER);
 		}
 		Map<String, Object> whereKeyValues = new Hashtable<>();
-		whereKeyValues.put(DataConstant.DATA_ID, dataId);
+		whereKeyValues.put(DataOperatorFactory.DATA_ID, dataId);
 		int update = update(tableCache.getTableName(), updateValues, whereKeyValues);
 		if (update < 1){
 			return Rp.failed(RpEnum.FAILED);
@@ -94,8 +94,8 @@ public interface BaseDao<T> extends SquirrelMybatisDao<T>, DataOperator<T> {
 	@Override
 	default Rp<T> selectById(String id) {
 		Class<? super T> beanClass = getBeanClass();
-		DataOperatorFactory.TableCache paramCache = DataOperatorFactory.getTableCache(beanClass);
-		List<T> ts = selectByIds(paramCache.getTableName(), paramCache.getKeys(), Collections.singletonList(id));
+		DataOperatorFactory.TableCache tableCache = DataOperatorFactory.getTableCache(beanClass);
+		List<T> ts = selectByIds(tableCache.getTableName(), tableCache.getKeys(), Collections.singletonList(id), null);
 		if (ts != null && !ts.isEmpty()){
 			return Rp.success(ts.get(0));
 		}
@@ -103,28 +103,27 @@ public interface BaseDao<T> extends SquirrelMybatisDao<T>, DataOperator<T> {
 	}
 
 	@Override
-	default Rp<List<T>> selectByIds(Set<String> ids) {
+	default Rp<List<T>> selectByIds(Set<String> ids, LinkedHashMap<String, String> sortMap) {
 		Class<? super T> beanClass = getBeanClass();
-		DataOperatorFactory.TableCache paramCache = DataOperatorFactory.getTableCache(beanClass);
-		List<T> ts = selectByIds(paramCache.getTableName(), paramCache.getKeys(), ids);
+		DataOperatorFactory.TableCache tableCache = DataOperatorFactory.getTableCache(beanClass);
+		List<T> ts = selectByIds(tableCache.getTableName(), tableCache.getKeys(), ids, sortMap);
 		return Rp.success(ts);
 	}
 
 	@Override
-	default Rp<List<T>> select(Map<String, Object> map, String sort){
-		// TODO sort
+	default Rp<List<T>> select(Map<String, Object> map, LinkedHashMap<String, String> sortMap){
 		Class<? super T> beanClass = getBeanClass();
-		DataOperatorFactory.TableCache paramCache = DataOperatorFactory.getTableCache(beanClass);
-		List<T> select = select(paramCache.getTableName(), paramCache.getKeys(), map);
+		DataOperatorFactory.TableCache tableCache = DataOperatorFactory.getTableCache(beanClass);
+		List<T> select = select(tableCache.getTableName(), tableCache.getKeys(), map, sortMap);
 		return Rp.success(select);
 	}
 
 	@Override
-	default Rp<BasePage<T>> page(Map<String, Object> map, String sort, Integer current, Integer limit) {
+	default Rp<BasePage<T>> page(Map<String, Object> map, Integer current, Integer limit, LinkedHashMap<String, String> sortMap) {
 		Class<? super T> beanClass = getBeanClass();
 		DataOperatorFactory.TableCache paramCache = DataOperatorFactory.getTableCache(beanClass);
 		BasePage<T> basePage = new BasePage<>(current, limit);
-		List<T> pageList = this.page(basePage, paramCache.getTableName(), paramCache.getKeys(), map);
+		List<T> pageList = this.page(basePage, paramCache.getTableName(), paramCache.getKeys(), map, sortMap);
 		basePage.setList(pageList);
 		return Rp.success(basePage);
 	}

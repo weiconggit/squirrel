@@ -2,6 +2,7 @@ package org.squirrel.framework.data;
 
 import org.squirrel.framework.response.Rp;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -28,11 +29,11 @@ public interface DataOperator<T> {
 
     Rp<T> selectById(String id);
 
-    Rp<List<T>> selectByIds(Set<String> ids);
+    Rp<List<T>> selectByIds(Set<String> ids, LinkedHashMap<String, String> sortMap);
 
-    Rp<List<T>> select(Map<String, Object> map, String sort);
+    Rp<List<T>> select(Map<String, Object> map, LinkedHashMap<String, String> sortMap);
 
-    Rp<BasePage<T>> page(Map<String, Object> map, String sort, Integer current, Integer limit) ;
+    Rp<BasePage<T>> page(Map<String, Object> map, Integer current, Integer limit, LinkedHashMap<String, String> sortMap) ;
 
     
 }

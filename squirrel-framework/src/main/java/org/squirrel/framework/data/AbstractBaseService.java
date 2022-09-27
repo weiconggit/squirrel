@@ -28,8 +28,8 @@ public abstract class AbstractBaseService<T> implements BaseService<T>, Squirrel
 		Type[] actualTypeArguments = ((ParameterizedType) this.getClass().getGenericSuperclass()).getActualTypeArguments();
 		Class<T> classVO = (Class<T>) actualTypeArguments[0];
 		String simpleName = classVO.getSimpleName();
-		String daoSuffix = DataConstant.DAO_SUFFIX;
-		String beanSuffix = DataConstant.BEAN_SUFFIX;
+		String daoSuffix = DataOperatorFactory.DAO_SUFFIX;
+		String beanSuffix = DataOperatorFactory.BEAN_SUFFIX;
 		String daoName = simpleName.substring(0, simpleName.length() - beanSuffix.length()) + daoSuffix;
 		daoName = StrUtil.lowerFirstLetter(daoName);
 		this.baseDao = (BaseDao<T>)ApplicationContextHelper.getBean(daoName);

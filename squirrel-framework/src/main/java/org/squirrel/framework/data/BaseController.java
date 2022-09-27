@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.squirrel.framework.response.Rp;
 
 /**
@@ -22,6 +24,9 @@ public interface BaseController<T> {
 
     Rp<T> remove(Set<String> ids);
 
+    Rp<T> detail(String id);
+
     Rp<List<T>> list(Map<String, Object> query);
-    
+
+    Rp<BasePage<T>> page(Map<String, Object> query, Integer current, Integer limit);
 }
