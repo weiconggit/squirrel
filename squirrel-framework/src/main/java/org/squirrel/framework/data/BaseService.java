@@ -131,7 +131,7 @@ public interface BaseService<T> extends DataOperator<T> {
 			query = new HashMap<>();
 		}
 		// 逻辑删除
-		query.put(DataOperatorFactory.DATA_IS_DEL, false);
+		query.put(BaseDao.DATA_IS_DEL, false);
 		return Collections.emptyMap();
 	}
 

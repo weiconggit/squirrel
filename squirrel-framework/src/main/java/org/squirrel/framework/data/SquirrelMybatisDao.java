@@ -136,6 +136,7 @@ public interface SquirrelMybatisDao<T> {
 	 * @param tableName 表名
 	 * @param selectKeys key1,key2,...
 	 * @param ids
+	 * @param sortMap ORDER BY keyA ASC, keyB DESC...
 	 * @return
 	 */
 	@Select("<script>"
@@ -150,7 +151,7 @@ public interface SquirrelMybatisDao<T> {
 			+ "<if test=\"sortMap != null \">"
 				+ "ORDER BY "
 				+ "<foreach collection=\"sortMap.entrySet()\" separator=\",\" open=\"\" close=\"\" index=\"key\" item=\"item\">"
-				+ "${key} = #{item}"
+				+ "${key} #{item}"
 				+ "</foreach>"
 			+ "</if>"
 			+ "</script>")
@@ -164,7 +165,7 @@ public interface SquirrelMybatisDao<T> {
 	 * @param tableName 表名
 	 * @param selectKeys key1,key2,...
 	 * @param whereMap WHERE keyA = valueA AND keyB = valueB ...
-	 * @param sortMap 排序
+	 * @param sortMap ORDER BY keyA ASC, keyB DESC...
 	 * @return
 	 */
 	@Select("<script>"
@@ -183,7 +184,7 @@ public interface SquirrelMybatisDao<T> {
 			+ "<if test=\"sortMap != null \">"
 				+ "ORDER BY "
 				+ "<foreach collection=\"sortMap.entrySet()\" separator=\",\" open=\"\" close=\"\" index=\"key\" item=\"item\">"
-				+ "${key} = #{item}"
+				+ "${key} #{item}"
 				+ "</foreach>"
 			+ "</if>"
 			+ "</script>")
@@ -217,7 +218,7 @@ public interface SquirrelMybatisDao<T> {
 			+ "<if test=\"sortMap != null \">"
 				+ "ORDER BY "
 				+ "<foreach collection=\"sortMap.entrySet()\" separator=\",\" open=\"\" close=\"\" index=\"key\" item=\"item\">"
-				+ "${key} = #{item}"
+				+ "${key} #{item}"
 				+ "</foreach>"
 			+ "</if>"
 			+ "</script>")
