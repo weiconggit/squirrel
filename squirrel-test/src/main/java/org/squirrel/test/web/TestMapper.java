@@ -14,7 +14,7 @@ import org.squirrel.sys.user.UserVO;
 public interface TestMapper extends BaseDao<UserVO> {
 
 	@Override
-	default Class<UserVO> getBeanClass() {
+	default Class<UserVO> getEntityClass() {
 		return UserVO.class;
 	}
 

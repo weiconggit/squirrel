@@ -3,7 +3,6 @@ package org.squirrel.framework.data;
 import org.apache.ibatis.annotations.*;
 
 import java.util.Collection;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -15,13 +14,46 @@ import java.util.Map;
  */
 public interface SquirrelMybatisDao<T> {
 
+	/**
+	 * 条件sql脚本
+	 */
+	 String whereSqlScript = ""
+			+ "<if test=\"whereBeans != null\">"
+			+ 	"<where>"
+			+ 		"<foreach collection=\"whereBeans\" separator=\"\" open=\"\" close=\"\" index=\"\" item=\"item\">"
+			+ 			"<if test=\"item.value != null and item.type != \"IN\" and item.type != \"LIKE\" \">"
+			+ 				"AND ${item.name} ${item.type} #{item.value}"
+			+ 			"</if>"
+			+ 			"<if test=\"item.value != null and item.type == \"IN\" \">"
+			+ 				"AND ${item.name} IN "
+			+ 				"<foreach collection=\"item.value\" separator=\"\" open=\"(\" close=\")\" index=\"\" item=\"item2\">"
+			+					"#{item2}"
+			+ 				"</foreach>"
+			+ 			"</if>"
+			+ 			"<if test=\"item.value != null and item.type == \"LIKE\" \">"
+			+ 				"AND ${item.name} LIKE concat('%',#{item.value},'%')"
+			+ 			"</if>"
+			+ 		"</foreach>"
+			+ 	"</where>"
+			+ "</if>";
+
+	/**
+	 * 排序sql脚本
+	 */
+	String oderSqlScript = ""
+			 + "<if test=\"orderBeans != null \">"
+			 + " ORDER BY "
+			 + 	"<foreach collection=\"orderBeans\" separator=\",\" open=\"\" close=\"\" index=\"\" item=\"item\">"
+			 + 		"${item.name} #{item.value}"
+			 + 	"</foreach>"
+			 + "</if>";
 
 	/**
 	 * 单条插入
 	 * @param tableName 表名
 	 * @param insertKeys  (key1,key2,...)
 	 * @param insertValues (value1,value2...)
-	 * @return
+	 * @return 插入条数
 	 */
 	@Insert("<script>"
 			+ "INSERT INTO ${tableName} "
@@ -41,7 +73,7 @@ public interface SquirrelMybatisDao<T> {
 	 * @param tableName 表名
 	 * @param insertKeys (key1,key2,...)
 	 * @param insertValues (value1,value2...),(value1,value2...)
-	 * @return
+	 * @return 插入条数
 	 */
 	@Insert("<script>"
 			+ "INSERT INTO ${tableName} "
@@ -57,218 +89,91 @@ public interface SquirrelMybatisDao<T> {
 			+ "</script>")
 	int insertBatch(@Param("tableName") String tableName, @Param("insertKeys") List<String> insertKeys, @Param("insertValues") List<List<Object>> insertValues);
 
-//	/**
-//	 * TODO
-//	 * 无ID新增，有ID更新
-//	 * @param param
-//	 * @return
-//	 */
-//	@Update("<script>"
-//			+ "UPDATE ${tableName} SET "
-//			+ "<foreach collection=\"setKeyValues.entrySet()\" separator=\"\" open=\"\" close=\"\" index=\"key\" item=\"item\">"
-//			+ "${key} = #{item}"
-//			+ "</foreach>"
-//			+ "<where>"
-//			+ "<foreach collection=\"whereKeyValues.entrySet()\" separator=\"\" open=\"\" close=\"\" index=\"key\" item=\"item\">"
-//			+ "<if test=\"item.value != null\">"
-//			+ "AND ${key} = #{item}"
-//			+ "</if>"
-//			+ "</foreach>"
-//			+ "</where>"
-//			+ "</script>")
-//	int insertOnDuplicateKeyUpdate(@Param("tableName") String tableName, @Param("setKeyValues") Map<String, Object> setKeyValues, @Param("whereKeyValues") Map<String, Object> whereKeyValues);
-
 	/**
 	 * 条件更新
 	 * @param tableName 表名
 	 * @param setKeyValues key1 = value1,key2 = value2
-	 * @param whereKeyValues WHERE keyA = valueA AND keyB = valueB ...
-	 * @return
+	 * @param whereBeans WHERE keyA = valueA AND keyB = valueB ...
+	 * @return 变更条数
 	 */
 	@Update("<script>"
 			+ "UPDATE ${tableName} SET "
 			+ "<foreach collection=\"setKeyValues.entrySet()\" separator=\",\" open=\"\" close=\"\" index=\"key\" item=\"item\">"
-			+ "${key} = #{item}"
+			+ 	"${key} = #{item}"
 			+ "</foreach>"
-			+ "<where>"
-			+ "<foreach collection=\"whereKeyValues.entrySet()\" separator=\"\" open=\"\" close=\"\" index=\"key\" item=\"item\">"
-			+ "<if test=\"item.value != null\">"
-			+ "AND ${key} = #{item}"
-			+ "</if>"
-			+ "</foreach>"
-			+ "</where>"
+			+ whereSqlScript
 			+ "</script>")
-	int update(@Param("tableName") String tableName, @Param("setKeyValues") Map<String, Object> setKeyValues, @Param("whereKeyValues") Map<String, Object> whereKeyValues);
+	int update(@Param("tableName") String tableName, @Param("setKeyValues") Map<String, Object> setKeyValues, @Param("whereBeans") List<WhereBean> whereBeans);
+
+
+	/**
+	 * ids逻辑删除
+	 * @param tableName 表名
+	 * @return 删除条数
+	 */
+	@Delete("<script>"
+			+ "UPDATE ${tableName} SET ${logicKey} = #{logicValue} "
+			+ whereSqlScript
+			+ "</script>")
+	int logicDelete(@Param("tableName") String tableName, @Param("logicKey") String logicKey, @Param("logicValue") boolean logicValue, @Param("whereBeans") List<WhereBean> whereBeans);
+
 
 	/**
 	 * 条件删除
 	 * @param tableName 表名
-	 * @param whereKeyValues WHERE keyA = valueA AND keyB = valueB ...
-	 * @return
+	 * @param whereBeans WHERE keyA = valueA AND keyB = valueB ...
+	 * @return 删除条数
 	 */
 	@Delete("<script>"
-			+ "DELETE FROM ${tableName}"
-			+ "<where>"
-				+ "<foreach collection=\"whereKeyValues.entrySet()\" separator=\",\" open=\"\" close=\"\" index=\"key\" item=\"item\">"
-					+ "AND ${key} = #{item}"
-				+ "</foreach>"
-			+ "</where>"
+			+ "DELETE FROM ${tableName} "
+			+ whereSqlScript
 			+ "</script>")
-	int delete(@Param("tableName") String tableName, @Param("whereKeyValues") Map<String, Object> whereKeyValues);
-	
+	int delete(@Param("tableName") String tableName, @Param("whereBeans") List<WhereBean> whereBeans);
 
 	/**
-	 * ids删除
-	 * @param tableName 表名
-	 * @param ids
-	 * @return
-	 */
-	@Delete("<script>"
-			+ "DELETE FROM ${tableName} WHERE id IN "
-				+ "<foreach item=\"item\" collection=\"ids\" separator=\",\" open=\"(\" close=\")\" index=\"\">"
-					+ "#{item}"
-				+ "</foreach>"
-			+ "</script>")
-	int deleteByIds(@Param("tableName") String tableName, @Param("ids") Collection<String> ids);
-
-	/**
-	 * ids查询数据
+	 * 查询
 	 * @param tableName 表名
 	 * @param selectKeys key1,key2,...
-	 * @param ids
-	 * @param sortMap ORDER BY keyA ASC, keyB DESC...
-	 * @return
+	 * @param whereBeans WHERE keyA = valueA AND keyB = valueB ...
+	 * @param orderBeans ORDER BY keyA ASC, keyB DESC...
+	 * @return VO对象列表
+	 */
+	@Select("<script>"
+			+ "SELECT "
+				+ "<foreach item=\"item\" collection=\"selectKeys\" separator=\",\" open=\"\" close=\"\" index=\"\">"
+					+ "${item}"
+				+ "</foreach> "
+			+ " FROM ${tableName} "
+			+ whereSqlScript
+			+ oderSqlScript
+			+ "</script>")
+	List<T> select(@Param("tableName") String tableName,
+				   @Param("selectKeys") List<String> selectKeys,
+				   @Param("whereBeans") List<WhereBean> whereBeans,
+				   @Param("orderBeans") List<OrderBean> orderBeans);
+
+	/**
+	 * 分页查询
+	 * @param page 分页对象，如果查询参数中含有page，则VO对象列表会被自动装载到Page中的数据字段
+	 * @param tableName 表名
+	 * @param selectKeys key1,key2,...
+	 * @param whereBeans WHERE keyA = valueA AND keyB = valueB ...
+	 * @param orderBeans ORDER BY keyA ASC, keyB DESC...
+	 * @return VO对象列表
 	 */
 	@Select("<script>"
 			+ "SELECT "
 			+ "<foreach item=\"item\" collection=\"selectKeys\" separator=\",\" open=\"\" close=\"\" index=\"\">"
 				+ "${item}"
 			+ "</foreach> "
-			+ " FROM ${tableName} WHERE id IN "
-			+ "<foreach item=\"item\" collection=\"ids\" separator=\",\" open=\"(\" close=\")\" index=\"\">"
-				+ " #{item}"
-			+ "</foreach>"
-			+ "<if test=\"sortMap != null \">"
-				+ "ORDER BY "
-				+ "<foreach collection=\"sortMap.entrySet()\" separator=\",\" open=\"\" close=\"\" index=\"key\" item=\"item\">"
-				+ "${key} #{item}"
-				+ "</foreach>"
-			+ "</if>"
-			+ "</script>")
-	List<T> selectByIds(@Param("tableName") String tableName,
-						@Param("selectKeys") List<String> selectKeys,
-						@Param("ids") Collection<String> ids,
-						@Param("sortMap") LinkedHashMap<String, String> sortMap);
-
-	/**
-	 * 查询
-	 * @param tableName 表名
-	 * @param selectKeys key1,key2,...
-	 * @param whereMap WHERE keyA = valueA AND keyB = valueB ...
-	 * @param sortMap ORDER BY keyA ASC, keyB DESC...
-	 * @return
-	 */
-	@Select("<script>"
-			+ "SELECT "
-				+ "<foreach item=\"item\" collection=\"selectKeys\" separator=\",\" open=\"\" close=\"\" index=\"\">"
-					+ "${item}"
-				+ "</foreach> "
-			+ " FROM ${tableName}"
-			+ "<if test=\"whereMap != null\">"
-			+ "<where>"
-				+ "<foreach collection=\"whereMap.entrySet()\" separator=\",\" open=\"\" close=\"\" index=\"key\" item=\"item\" >"
-					+ "AND ${key} = #{item}"
-				+ "</foreach>"
-			+ "</where>"
-			+ "</if>"
-			+ "<if test=\"sortMap != null \">"
-				+ "ORDER BY "
-				+ "<foreach collection=\"sortMap.entrySet()\" separator=\",\" open=\"\" close=\"\" index=\"key\" item=\"item\">"
-				+ "${key} #{item}"
-				+ "</foreach>"
-			+ "</if>"
-			+ "</script>")
-	List<T> select(@Param("tableName") String tableName,
-				   @Param("selectKeys") List<String> selectKeys,
-				   @Param("whereMap") Map<String, Object> whereMap,
-				   @Param("sortMap") LinkedHashMap<String, String> sortMap);
-
-	/**
-	 * 分页查询
-	 * @param page
-	 * @param tableName 表名
-	 * @param selectKeys key1,key2,...
-	 * @param whereMap WHERE keyA = valueA AND keyB = valueB ...
-	 * @param sortMap ORDER BY keyA ASC, keyB DESC...
-	 * @return
-	 */
-	@Select("<script>"
-			+ "SELECT "
-				+ "<foreach item=\"item\" collection=\"selectKeys\" separator=\",\" open=\"\" close=\"\" index=\"\">"
-					+ "${item}"
-				+ "</foreach> "
-			+ " FROM ${tableName}"
-			+ "<if test=\"whereMap != null\">"
-			+ "<where>"
-				+ "<foreach collection=\"whereMap.entrySet()\" separator=\",\" open=\"\" close=\"\" index=\"key\" item=\"item\">"
-					+ "AND ${key} = #{item}"
-				+ "</foreach>"
-			+ "</where>"
-			+ "</if>"
-			+ "<if test=\"sortMap != null \">"
-				+ "ORDER BY "
-				+ "<foreach collection=\"sortMap.entrySet()\" separator=\",\" open=\"\" close=\"\" index=\"key\" item=\"item\">"
-				+ "${key} #{item}"
-				+ "</foreach>"
-			+ "</if>"
+			+ " FROM ${tableName} "
+			+ whereSqlScript
+			+ oderSqlScript
 			+ "</script>")
 	List<T> page(@Param("page") BasePage<T> page,
 				 @Param("tableName") String tableName,
 				 @Param("selectKeys") List<String> selectKeys,
-				 @Param("whereMap") Map<String, Object> whereMap,
-				 @Param("sortMap") LinkedHashMap<String, String> sortMap);
-
-
-
-
-
-
-
-	// select count(1) from table where is_active is null;
-	// SELECT * FROM product a JOIN (select id from product limit 866613, 20) b ON a.ID = b.id
-	/**
-	 * 条件查询总数
-	 * @param param
-	 * @return
-	 */
-//	@Select("<script>"
-//			+ "SELECT count(id) FROM ${param.tableName} "
-//			+ "<where>"
-//				+ "<foreach item=\"item\" collection=\"param.whereKeyValues\" separator=\",\" open=\"\" close=\"\" index=\"\">"
-//					+ "AND ${item.key} = #{item.value}"
-//				+ "</foreach>"
-//			+ "</where>"
-//			+ "</script>")
-//	int count(@Param("param") DataOperatorParam param);
-
-	/**
-	 * 分页查询
-	 * @param param
-	 * @return
-	 */
-//	@Select("<script>"
-//			+ "SELECT "
-//			+ "<foreach item=\"item\" collection=\"param.selectKeys\" separator=\",\" open=\"\" close=\"\" index=\"\">"
-//				+ "${item}"
-//			+ "</foreach> "
-//			+ " FROM ${param.tableName} a JOIN "
-//			+ "(select id from ${param.tableName} limit #{basePage.offset}, #{basePage.limit}) b ON a.id = b.id"
-//			+ "<where>"
-//				+ "<foreach item=\"item\" collection=\"param.whereKeyValues\" separator=\",\" open=\"\" close=\"\" index=\"\">"
-//					+ "AND b.${item.key} = #{item.value}"
-//				+ "</foreach>"
-//			+ "</where>"
-//			+ "</script>")
-//	List<T> page(@Param("param") DataOperatorParam param, @Param("basePage") BasePage<T> basePage);
+				 @Param("whereBeans") List<WhereBean> whereBeans,
+				 @Param("orderBeans") List<OrderBean> orderBeans);
 	
 }

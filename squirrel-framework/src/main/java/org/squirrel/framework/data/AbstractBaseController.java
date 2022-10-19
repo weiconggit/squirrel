@@ -2,10 +2,9 @@ package org.squirrel.framework.data;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.text.ParseException;
 import java.util.*;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,9 +15,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.squirrel.framework.SquirrelInitializer;
 import org.squirrel.framework.auth.annotation.Authority;
 import org.squirrel.framework.auth.AuthorityMenuLoader;
+import org.squirrel.framework.response.BizException;
 import org.squirrel.framework.response.Rp;
 import org.squirrel.framework.response.RpEnum;
 import org.squirrel.framework.spring.ApplicationContextHelper;
+import org.squirrel.framework.util.DateUtil;
 import org.squirrel.framework.util.StrUtil;
 
 import io.swagger.annotations.ApiOperation;
@@ -34,9 +35,7 @@ import net.sf.oval.Validator;
  * @param <T>
  */
 public abstract class AbstractBaseController<T> implements BaseController<T>, SquirrelInitializer {
-	
-	private final Logger log = LoggerFactory.getLogger(AbstractBaseController.class);
-	
+
 	// 通用接口地址
 	protected static final String LIST = "list";
 	protected static final String PAGE = "page";
@@ -55,6 +54,8 @@ public abstract class AbstractBaseController<T> implements BaseController<T>, Sq
 	private Validator validator;
 	/** service实现 */
 	private BaseService<T> baseService;
+	/** entity类 */
+	private Class<? super T> entityClass;
 	
 	@Override
 	public BaseService<T> getBaseService(){
@@ -68,6 +69,7 @@ public abstract class AbstractBaseController<T> implements BaseController<T>, Sq
 		Type[] actualTypeArguments = ((ParameterizedType) this.getClass().getGenericSuperclass()).getActualTypeArguments();
 		Class<T> classVO = (Class<T>) actualTypeArguments[0];
 		// 需等待 ApplicationContextHelper 创建之后
+		this.entityClass = classVO.getSuperclass();
 		String simpleName = classVO.getSimpleName();
 		String serviceName = simpleName.substring(0, simpleName.length() - 2) + "Service";
 		serviceName = StrUtil.lowerFirstLetter(serviceName);
@@ -95,7 +97,7 @@ public abstract class AbstractBaseController<T> implements BaseController<T>, Sq
 		}
 		String afterValidate = afterValidate(t);
 		if (afterValidate != null) {
-			Rp.failed(RpEnum.ERROR_VALIDATE, validate.get(0).getMessage());
+			Rp.failed(RpEnum.ERROR_VALIDATE, afterValidate);
 		}
 		return getBaseService().insert(t);
 	}
@@ -137,8 +139,9 @@ public abstract class AbstractBaseController<T> implements BaseController<T>, Sq
 	@GetMapping(value = LIST)
 	@Override
 	public Rp<List<T>> list(@RequestParam(name = "query", required = false) Map<String, Object> query) {
-		LinkedHashMap<String, String> sort = getSort(query);
-		return getBaseService().select(query, sort);
+		List<OrderBean> orderBeans = getOrderBeans(query);
+		List<WhereBean> whereBeans = getWhereBeans(query);
+		return getBaseService().select(whereBeans, orderBeans);
 	}
 	
 	@Authority(AuthorityMenuLoader.GET)
@@ -148,8 +151,9 @@ public abstract class AbstractBaseController<T> implements BaseController<T>, Sq
 	public Rp<BasePage<T>> page(@RequestParam(name = "query", required = false) Map<String, Object> query, 
 								@RequestParam(name = "current") Integer current,
 								@RequestParam(name = "limit") Integer limit) {
-		LinkedHashMap<String, String> sort = getSort(query);
-		return getBaseService().page(query, current, limit, sort);
+		List<OrderBean> orderBeans = getOrderBeans(query);
+		List<WhereBean> whereBeans = getWhereBeans(query);
+		return getBaseService().page(whereBeans, current, limit, orderBeans);
 	}
 
 	/**
@@ -157,26 +161,84 @@ public abstract class AbstractBaseController<T> implements BaseController<T>, Sq
 	 * @param query
 	 * @return
 	 */
-	protected LinkedHashMap<String, String> getSort(Map<String, Object> query){
-		LinkedHashMap<String, String> sortMap = null;
+	public List<OrderBean> getOrderBeans(Map<String, Object> query){
 		// 检查下是否含有排序字段，用于通用接口的参数
+		List<OrderBean> list = null;
 		if (query != null) {
-			Object sortKeyObj = query.get(SORT_KEY);
+			Object sortKeyObj = query.remove(SORT_KEY);
 			if (sortKeyObj != null) {
-				sortMap = new LinkedHashMap<>();
-				Object sortTypeObj = query.get(SORT_TYPE);
+				list = new ArrayList<>();
+				Object sortTypeObj = query.remove(SORT_TYPE);
+				String key = String.valueOf(sortKeyObj);
 				if (sortTypeObj == null) {
 					// 默认为升序
-					sortMap.put(String.valueOf(sortKeyObj), ASC);
+					list.add(new OrderBean(key, ASC));
 				} else {
 					String sortType = String.valueOf(sortTypeObj);
 					if (ASC.equals(sortType) || DESC.equals(sortType)) {
-						sortMap.put(String.valueOf(sortKeyObj), sortType);
+						list.add(new OrderBean(key, sortType));
 					}
 				}
 			}
 		}
-		return sortMap;
+		return list;
+	}
+
+	public List<WhereBean> getWhereBeans(Map<String, Object> query){
+		List<WhereBean> list = null;
+		if (query != null) {
+			list = new ArrayList<>(query.size());
+			TableBean tableBean = BaseDao.getTableBean(entityClass);
+			Map<String, String> fieldTypeMap = tableBean.getFieldTypeMap();
+			Iterator<Map.Entry<String, Object>> iterator = query.entrySet().iterator();
+			while (iterator.hasNext()) {
+				Map.Entry<String, Object> next = iterator.next();
+				String key = next.getKey();
+				Object value = next.getValue();
+				String fieldType = fieldTypeMap.get(key);
+				if (fieldType != null) {
+					switch (fieldType) {
+						case "java.util.List":
+							list.add(new WhereBean(key, value, WhereBean.IN));
+							break;
+						case "java.lang.String":
+							// 区分是日期
+							String string = String.valueOf(value);
+							if (string.contains(" - ")) {
+								try {
+									String[] split = string.split("-");
+									Date start = DateUtil.convertStringToDate(split[0].trim());
+									Date end = DateUtil.convertStringToDate(split[1].trim());
+									list.add(new WhereBean(key, start, WhereBean.GTE));
+									list.add(new WhereBean(key, end, WhereBean.LTE));
+								} catch (ParseException e) {
+									throw new BizException(e.getMessage());
+								}
+							} else {
+								list.add(new WhereBean(key, value, WhereBean.LIKE));
+							}
+							break;
+						case "java.util.Date":
+							list.add(new WhereBean(key, value, WhereBean.GT));
+							list.add(new WhereBean(key, value, WhereBean.LT));
+							break;
+						case "java.lang.Boolean":
+						case "java.lang.Character":
+						case "java.lang.Interger":
+						case "java.lang.Long":
+						case "java.lang.Double":
+						case "java.lang.Float":
+						case "java.lang.Short":
+						case "java.lang.Byte":
+							list.add(new WhereBean(key, value, WhereBean.EQ));
+							break;
+						default:
+							break;
+					}
+				}
+			}
+		}
+		return list;
 	}
 
 	/**
@@ -187,5 +249,6 @@ public abstract class AbstractBaseController<T> implements BaseController<T>, Sq
 	protected String afterValidate(T data) {
 		return null;
 	}
-	
+
+
 }

@@ -1,7 +1,7 @@
 package org.squirrel.framework.data;
 
-import org.slf4j.Logger;
 import org.squirrel.framework.SquirrelProperties;
+import org.squirrel.framework.response.BizException;
 import org.squirrel.framework.response.Rp;
 import org.squirrel.framework.response.RpEnum;
 import org.squirrel.framework.util.StrUtil;
@@ -19,55 +19,48 @@ import java.util.concurrent.ConcurrentHashMap;
 public interface BaseDao<T> extends SquirrelMybatisDao<T>, DataOperator<T> {
 
 	/// 实体字段信息缓存，省略了public static final
-	Map<Class<?>, TableCache> tableCacheMap = new ConcurrentHashMap<>();
-	String DATA_ID = SquirrelProperties.get("dataId");
-	String DATA_IS_DEL = SquirrelProperties.get("dataIsDel");
-	String DAO_SUFFIX = SquirrelProperties.get("daoSuffix");
-	String SERVICE_SUFFIX = SquirrelProperties.get("serviceSuffix");
-	String BEAN_SUFFIX = SquirrelProperties.get("beanSuffix");
+	Map<Class<?>, TableBean> tableBeanMap = new ConcurrentHashMap<>();
 
 	/**
 	 * 当前与数据库表对应的实体类型，VO的父类，省略了public abstract
 	 * @return 实体名称
 	 */
-	Class<? super T> getBeanClass();
-
-	/**
-	 * 获取实现类的日志对象引用
-	 * @return
-	 */
-	Logger getLog();
+	Class<? super T> getEntityClass();
 
 	@Override
 	default Rp<T> insert(T t) {
-		Class<? super T> beanClass = getBeanClass();
-		TableCache tableCache = getTableCache(beanClass);
-		List<Object> beanValues = null;
+		Class<? super T> entityClass = getEntityClass();
+		if (entityClass == null) {
+			throw new BizException("getBeanClass() must return a entity class");
+		}
+		TableBean tableBean = getTableBean(entityClass);
+		List<Object> beanValues;
 		try {
-			beanValues = getInsertValues(t, tableCache);
+			beanValues = getInsertValues(t, tableBean);
 		} catch (IllegalAccessException e) {
-			getLog().error("getInsertValues error: ", e);
+			throw new BizException(RpEnum.ERROR_SYSTEM, "getInsertValues error: " + e.getMessage(), e);
 		}
-		if (beanClass != null) {
-			int insert = insert(tableCache.getTableName(), tableCache.getKeys(), beanValues);
-			if (insert > 0){
-				return Rp.success();
-			}
+		int insert = insert(tableBean.getName(), tableBean.getFieldNames(), beanValues);
+		if (insert < 1){
+			return Rp.failed(RpEnum.FAILED);
 		}
-		return Rp.failed(RpEnum.FAILED);
+		return Rp.success();
 	}
 
 	@Override
 	default Rp<List<T>> insertBatch(List<T> list) {
-		Class<? super T> beanClass = getBeanClass();
-		TableCache tableCache = getTableCache(beanClass);
-		List<List<Object>> beanValues = null;
-		try {
-			beanValues = getInsertValues(list, tableCache);
-		} catch (IllegalAccessException e) {
-			getLog().error("getInsertValues error: ", e);
+		Class<? super T> entityClass = getEntityClass();
+		if (entityClass == null) {
+			throw new BizException("getBeanClass() must return a entity class");
 		}
-		int insert = insertBatch(tableCache.getTableName(), tableCache.getKeys(), beanValues);
+		TableBean tableBean = getTableBean(entityClass);
+		List<List<Object>> beanValues;
+		try {
+			beanValues = getInsertValues(list, tableBean);
+		} catch (IllegalAccessException e) {
+			throw new BizException(RpEnum.ERROR_SYSTEM, "getInsertValues error: " + e.getMessage(), e);
+		}
+		int insert = insertBatch(tableBean.getName(), tableBean.getFieldNames(), beanValues);
 		if (insert < 1){
 			return Rp.failed(RpEnum.FAILED);
 		}
@@ -76,43 +69,55 @@ public interface BaseDao<T> extends SquirrelMybatisDao<T>, DataOperator<T> {
 
 	@Override
 	default Rp<T> update(T t) {
-		Class<? super T> beanClass = getBeanClass();
-		TableCache tableCache = getTableCache(beanClass);
-		Map<String, Object> updateMap = null;
+		Class<? super T> entityClass = getEntityClass();
+		if (entityClass == null) {
+			throw new BizException("getBeanClass() must return a entity class");
+		}
+		TableBean tableBean = getTableBean(entityClass);
+		Map<String, Object> updateMap;
 		try {
-			updateMap = getUpdateMap(t, tableCache);
+			updateMap = getUpdateMap(t, tableBean);
 		} catch (IllegalAccessException e) {
-			getLog().error("getUpdateMap error: ", e);
+			throw new BizException(RpEnum.ERROR_SYSTEM, "getUpdateMap error: " + e.getMessage(), e);
 		}
-		if (updateMap != null) {
-			// 确保数据ID存在
-			Object dataId = updateMap.remove(DATA_ID);
-			if (dataId == null){
-				return Rp.failed(RpEnum.ERROR_PARAMETER);
-			}
-			// 此处where条件仅有一个id
-			Map<String, Object> whereMap = new Hashtable<>();
-			whereMap.put(DATA_ID, dataId);
-			int update = update(tableCache.getTableName(), updateMap, whereMap);
-			if (update > 0){
-				return Rp.success();
-			}
+		// 确保数据ID存在
+		Object dataId = updateMap.remove(DATA_ID);
+		if (dataId == null){
+			return Rp.failed(RpEnum.ERROR_PARAMETER);
 		}
-		return Rp.failed(RpEnum.FAILED);
-	}
-
-	@Override
-	default Rp<List<T>> updateBatch(List<T> list) {
-		// TODO
+		// 此处where条件仅有一个id
+		List<WhereBean> whereBeans = Collections.singletonList(new WhereBean(DATA_ID, dataId));
+		int update = update(tableBean.getName(), updateMap, whereBeans);
+		if (update < 1){
+			return Rp.failed(RpEnum.FAILED);
+		}
 		return Rp.success();
 	}
 
 	@Override
-	default Rp<T> delete(Map<String, Object> map){
-		Class<? super T> beanClass = getBeanClass();
-		TableCache tableCache = getTableCache(beanClass);
-		int i = delete(tableCache.getTableName(), map);
-		if (i < 1){
+	default Rp<T> logicDeleteByIds(Set<String> ids) {
+		Class<? super T> entityClass = getEntityClass();
+		if (entityClass == null) {
+			throw new BizException("getBeanClass() must return a entity class");
+		}
+		TableBean tableBean = getTableBean(entityClass);
+		List<WhereBean> whereBeans = Collections.singletonList(new WhereBean(DATA_ID, ids, WhereBean.IN));
+		int logicDelete = logicDelete(tableBean.getName(), DATA_IS_DEL, true, whereBeans);
+		if (logicDelete < 1) {
+			return Rp.failed(RpEnum.FAILED);
+		}
+		return Rp.success();
+	}
+
+	@Override
+	default Rp<T> logicDelete(List<WhereBean> whereBeans) {
+		Class<? super T> entityClass = getEntityClass();
+		if (entityClass == null) {
+			throw new BizException("getBeanClass() must return a entity class");
+		}
+		TableBean tableBean = getTableBean(entityClass);
+		int logicDelete = logicDelete(tableBean.getName(), DATA_IS_DEL, true, whereBeans);
+		if (logicDelete < 1) {
 			return Rp.failed(RpEnum.FAILED);
 		}
 		return Rp.success();
@@ -120,9 +125,27 @@ public interface BaseDao<T> extends SquirrelMybatisDao<T>, DataOperator<T> {
 
 	@Override
 	default Rp<T> deleteByIds(Set<String> ids){
-		Class<? super T> beanClass = getBeanClass();
-		TableCache tableCache = getTableCache(beanClass);
-		int i = deleteByIds(tableCache.getTableName(), ids);
+		Class<? super T> entityClass = getEntityClass();
+		if (entityClass == null) {
+			throw new BizException("getBeanClass() must return a entity class");
+		}
+		TableBean tableCache = getTableBean(entityClass);
+		List<WhereBean> whereBeans = Collections.singletonList(new WhereBean(DATA_ID, ids, WhereBean.IN));
+		int delete = delete(tableCache.getName(), whereBeans);
+		if (delete < 1){
+			return Rp.failed(RpEnum.FAILED);
+		}
+		return Rp.success();
+	}
+
+	@Override
+	default Rp<T> delete(List<WhereBean> whereBeans){
+		Class<? super T> entityClass = getEntityClass();
+		if (entityClass == null) {
+			throw new BizException("getBeanClass() must return a entity class");
+		}
+		TableBean tableBean = getTableBean(entityClass);
+		int i = delete(tableBean.getName(), whereBeans);
 		if (i < 1){
 			return Rp.failed(RpEnum.FAILED);
 		}
@@ -131,69 +154,88 @@ public interface BaseDao<T> extends SquirrelMybatisDao<T>, DataOperator<T> {
 
 	@Override
 	default Rp<T> selectById(String id) {
-		Class<? super T> beanClass = getBeanClass();
-		TableCache tableCache = getTableCache(beanClass);
-		List<T> ts = selectByIds(tableCache.getTableName(), tableCache.getKeys(), Collections.singletonList(id), null);
-		if (ts != null && !ts.isEmpty()){
-			return Rp.success(ts.get(0));
+		Class<? super T> entityClass = getEntityClass();
+		if (entityClass == null) {
+			throw new BizException("getBeanClass() must return a entity class");
 		}
-		return Rp.success();
+		TableBean tableCache = getTableBean(entityClass);
+		List<WhereBean> whereBeans = Collections.singletonList(new WhereBean(DATA_ID, id));
+		List<T> ts = select(tableCache.getName(), tableCache.getFieldNames(), whereBeans, null);
+		if (ts == null || ts.isEmpty()){
+			return Rp.failed(RpEnum.FAILED);
+		}
+		return Rp.success(ts.get(0));
 	}
 
 	@Override
-	default Rp<List<T>> selectByIds(Set<String> ids, LinkedHashMap<String, String> sortMap) {
-		Class<? super T> beanClass = getBeanClass();
-		TableCache tableCache = getTableCache(beanClass);
-		List<T> ts = selectByIds(tableCache.getTableName(), tableCache.getKeys(), ids, sortMap);
+	default Rp<List<T>> selectByIds(Set<String> ids, List<OrderBean> orderBeans) {
+		Class<? super T> entityClass = getEntityClass();
+		if (entityClass == null) {
+			throw new BizException("getBeanClass() must return a entity class");
+		}
+		TableBean tableCache = getTableBean(entityClass);
+		List<WhereBean> whereBeans = Collections.singletonList(new WhereBean(DATA_ID, ids, WhereBean.IN));
+		List<T> ts = select(tableCache.getName(), tableCache.getFieldNames(), whereBeans, orderBeans);
+		if (ts == null || ts.isEmpty()){
+			return Rp.failed(RpEnum.FAILED);
+		}
 		return Rp.success(ts);
 	}
 
 	@Override
-	default Rp<List<T>> select(Map<String, Object> map, LinkedHashMap<String, String> sortMap){
-		Class<? super T> beanClass = getBeanClass();
-		TableCache tableCache = getTableCache(beanClass);
-		List<T> select = select(tableCache.getTableName(), tableCache.getKeys(), map, sortMap);
+	default Rp<List<T>> select(List<WhereBean> whereBeans, List<OrderBean> orderBeans){
+		Class<? super T> entityClass = getEntityClass();
+		if (entityClass == null) {
+			throw new BizException("getBeanClass() must return a entity class");
+		}
+		TableBean tableBean = getTableBean(entityClass);
+		List<T> select = select(tableBean.getName(), tableBean.getFieldNames(), whereBeans, orderBeans);
 		return Rp.success(select);
 	}
 
 	@Override
-	default Rp<BasePage<T>> page(Map<String, Object> map, Integer current, Integer limit, LinkedHashMap<String, String> sortMap) {
-		Class<? super T> beanClass = getBeanClass();
-		TableCache paramCache = getTableCache(beanClass);
+	default Rp<BasePage<T>> page(List<WhereBean> whereBeans, Integer current, Integer limit, List<OrderBean> orderBeans) {
+		Class<? super T> entityClass = getEntityClass();
+		if (entityClass == null) {
+			throw new BizException("getBeanClass() must return a entity class");
+		}
+		TableBean tableBean = getTableBean(entityClass);
 		BasePage<T> basePage = new BasePage<>(current, limit);
-		List<T> pageList = this.page(basePage, paramCache.getTableName(), paramCache.getKeys(), map, sortMap);
+		List<T> pageList = this.page(basePage, tableBean.getName(), tableBean.getFieldNames(), whereBeans, orderBeans);
 		basePage.setList(pageList);
 		return Rp.success(basePage);
 	}
 
 	/**
-	 * 获取表信息缓存，省略了public前缀
+	 * 获取或初始化表信息缓存，省略了public前缀
 	 * @param beanClass 实体类
 	 * @return
 	 */
-	static TableCache getTableCache(Class<?> beanClass) {
-		TableCache tableCache = tableCacheMap.get(beanClass);
+	static TableBean getTableBean(Class<?> beanClass) {
+		TableBean tableBean = tableBeanMap.get(beanClass);
 		// 初始化实体字段sql信息
-		if (tableCache == null) {
+		if (tableBean == null) {
 			Field[] declaredFields = beanClass.getDeclaredFields();
 			List<String> keys = new ArrayList<>();
-			Map<String, String> fieldKey = new HashMap<>();
+			Map<String, String> fieldNameMap = new HashMap<>();
+			Map<String, String> fieldTypeMap = new HashMap<>();
 			for (int i = 0, size = declaredFields.length; i < size; i++) {
 				Field declaredField = declaredFields[i];
 				declaredField.setAccessible(true);
 				String name = declaredField.getName();
 				String fieldName = StrUtil.humpToUnderLine(name);
 				keys.add(fieldName);
-				fieldKey.put(name, fieldName);
+				fieldNameMap.put(name, fieldName);
+				fieldTypeMap.put(name, declaredField.getType().getName());
 			}
 			String simpleName = beanClass.getSimpleName();
 			String tableName = StrUtil.humpToUnderLine(simpleName);
 			/// TODO 暂时，实体对象未于表对应
-//			tableCache = new TableCache(tableName, declaredFields, keys, fieldKey);
-			tableCache = new TableCache("sys_user", declaredFields, keys, fieldKey);
-			tableCacheMap.put(beanClass, tableCache);
+//			tableCache = new TableCache(tableName, declaredFields, keys, fieldNameMap);
+			tableBean = new TableBean("sys_user", declaredFields, keys, fieldTypeMap, fieldNameMap);
+			tableBeanMap.put(beanClass, tableBean);
 		}
-		return tableCache;
+		return tableBean;
 	}
 
 	/**
@@ -202,19 +244,19 @@ public interface BaseDao<T> extends SquirrelMybatisDao<T>, DataOperator<T> {
 	 * @param <T>
 	 * @return
 	 */
-	static <T> Map<String, Object> getUpdateMap(T t, TableCache tableCache) throws IllegalAccessException {
-		Map<String, String> fieldKey = tableCache.getFieldKey();
-		Field[] fields = tableCache.getFields();
-		Map<String, Object> map = new HashMap<>();
+	static <T> Map<String, Object> getUpdateMap(T t, TableBean tableBean) throws IllegalAccessException {
+		Map<String, String> fieldNameMap = tableBean.getFieldNameMap();
+		Field[] fields = tableBean.getFields();
+		Map<String, Object> map = new LinkedHashMap<>();
 		for (Field field : fields) {
 			Object object = field.get(t);
-			String name = field.getName();
+			String entityFieldName = field.getName();
 			// isDel字段的特殊处理
-			if (DATA_IS_DEL.equals(name)) {
+			if (DATA_IS_DEL.equals(entityFieldName)) {
 				continue;
 			}
-			String key = fieldKey.get(name);
-			map.put(key, object);
+			String tableFieldName = fieldNameMap.get(entityFieldName);
+			map.put(tableFieldName, object);
 		}
 		return map;
 	}
@@ -226,12 +268,10 @@ public interface BaseDao<T> extends SquirrelMybatisDao<T>, DataOperator<T> {
 	 * @param <T>
 	 * @return
 	 */
-	static <T> List<List<Object>> getInsertValues(List<T> ts, TableCache tableCache) throws IllegalAccessException {
-		Field[] fields = tableCache.getFields();
-		// 数据参数构造
+	static <T> List<List<Object>> getInsertValues(List<T> ts, TableBean tableBean) throws IllegalAccessException {
 		List<List<Object>> list = new ArrayList<>();
 		for (T t : ts) {
-			List<Object> insertValues = getInsertValues(t, tableCache);
+			List<Object> insertValues = getInsertValues(t, tableBean);
 			list.add(insertValues);
 		}
 		return list;
@@ -243,14 +283,14 @@ public interface BaseDao<T> extends SquirrelMybatisDao<T>, DataOperator<T> {
 	 * @param <T>
 	 * @return
 	 */
-	static <T> List<Object> getInsertValues(T t, TableCache tableCache) throws IllegalAccessException {
-		Field[] fields = tableCache.getFields();
+	static <T> List<Object> getInsertValues(T t, TableBean tableBean) throws IllegalAccessException {
+		Field[] fields = tableBean.getFields();
 		// 数据参数构造
 		List<Object> list = new ArrayList<>();
 		for (Field field : fields) {
 			// isDel字段的特殊处理
 			if (DATA_IS_DEL.equals(field.getName())) {
-				list.add(true);
+				list.add(false);
 			} else {
 				Object object = field.get(t);
 				list.add(object);
@@ -258,4 +298,5 @@ public interface BaseDao<T> extends SquirrelMybatisDao<T>, DataOperator<T> {
 		}
 		return list;
 	}
+
 }
