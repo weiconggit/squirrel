@@ -13,7 +13,7 @@ import java.util.Optional;
  * @time   2021-02-21 
  * @version v1
  */
-public interface AuthController {
+public interface AuthenticationController<T> {
 
 	/**
 	 * 账号密码登录
@@ -23,17 +23,17 @@ public interface AuthController {
 	/**
 	 * 登出
 	 */
-	Rp<String> logout(String token);
+	Rp<T> logout(String token);
 
 	/**
 	 * 注册
 	 */
-	Rp<String> register(Object objectUser);
+	Rp<T> register(Object objectUser);
 
 	/**
 	 * 注销
 	 */
-	Rp<String> logoff(String token);
+	Rp<T> logoff(String token);
 
 
 }

@@ -2,7 +2,7 @@ package org.squirrel.framework.cache;
 
 import java.lang.ref.Reference;
 import java.lang.ref.ReferenceQueue;
-import java.lang.ref.WeakReference;
+import java.lang.ref.SoftReference;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -23,46 +23,72 @@ public class LocalBaseCache implements BaseCache {
 
 	private static final Logger log = LoggerFactory.getLogger(LocalBaseCache.class);
 
-	private static final Map<String, CacheObejct> map = new ConcurrentHashMap<>();
+	private static final Integer MAX_CACHE_COUNT = 100_0000;
+	private static final Integer MAX_SLEEP_TIME = 5000;
 
+	// 普通缓存
+	private static final Map<String, CacheObejct> map = new ConcurrentHashMap<>();
+	// 锁缓存队列，当内存不足、mapLok的锁失去引用时，lock对象会被放入queue中在清理线程中被清理
 	private static final ReferenceQueue<Lock> queue = new ReferenceQueue<>();
-	private static final Map<String, WeakReference<Lock>> mapLock = new ConcurrentHashMap<>();
+	// 软引用锁缓存
+	private static final Map<String, SoftReference<Lock>> mapLock = new ConcurrentHashMap<>();
 
 	static {
+		// 初始化过期清除线程
 		Thread thread = new Thread(() -> {
 			while (true) {
 				try {
+					// 是否需要线程间隔运行
 					boolean needSleep = true;
-					Reference<? extends Lock> poll = queue.poll();
-					if (poll != null) {
-						poll.clear();
-						needSleep = false;
-					}
+					// 普通缓存清理过期数据
 					if (!map.isEmpty()) {
-						long currentTimeMillis = System.currentTimeMillis();
-						map.values().removeIf(v -> v.getRemoveTime() != null && currentTimeMillis > v.getRemoveTime());
-						needSleep = false;
+						// 避免内存泄露
+						if (map.size() > MAX_CACHE_COUNT) {
+							log.error("LocalBaseCacheExpireThread map size is more than {}, map has been clear!", MAX_CACHE_COUNT);
+							map.clear();
+						} else {
+							long currentTimeMillis = System.currentTimeMillis();
+							map.values().removeIf(v -> v.getRemoveTime() != null && currentTimeMillis > v.getRemoveTime());
+						}
 					}
-					// 避免内存泄露
-					if (mapLock.size() > 100_0000) {
+					// 锁缓存清理
+					if (!mapLock.isEmpty() && mapLock.size() > MAX_CACHE_COUNT) {
 						mapLock.clear();
 					}
+					// 清理失去引用的锁
+					Reference<? extends Lock> poll = queue.poll();
+					if (poll != null) {
+						Lock lock = poll.get();
+						if (lock != null) {
+							// 如果是GC清除的软引用，锁可能还没有被释放，需要在此释放
+							lock.unlock();
+						}
+						needSleep = false;
+					}
+
 					if (needSleep) {
-						Thread.sleep(5000);
+						try {
+							Thread.sleep(MAX_SLEEP_TIME);
+						} catch (InterruptedException interruptedException) {
+							log.error("LocalBaseCacheExpireThread sleep error", interruptedException);
+							Thread.currentThread().interrupt();
+						}
 					}
 				} catch (Exception e) {
-					log.error("thread error: ", e);
+					log.error("unknown error, while will be break", e);
 					break;
 				}
 			}
 		});
+		thread.setName("LocalBaseCacheExpireThread");
 		thread.start();
 	}
 
 
 	@Override
-	public void remove(String key) {
+	public boolean remove(String key) {
 		map.remove(key);
+		return true;
 	}
 
 	@Override
@@ -76,11 +102,11 @@ public class LocalBaseCache implements BaseCache {
 			return Optional.empty();
 		}
 		try {
-			return Optional.ofNullable((T)value);
+			return Optional.of(clazz.cast(value));
 		} catch (Exception e) {
 			log.error("can not cast value {} to {}", value, clazz);
-			return Optional.empty();
 		}
+		return Optional.empty();
 	}
 
 	@Override
@@ -98,52 +124,64 @@ public class LocalBaseCache implements BaseCache {
 	}
 
 	@Override
-	public void put(String key, Object object, int expiraTime) {
-		map.put(key, new CacheObejct(key, object, expiraTime));
+	public void put(String key, Object object, int expireTime) {
+		map.put(key, new CacheObejct(key, object, expireTime));
 	}
 
 	@Override
 	public void lock(String lockKey) {
-		Lock lock = mapLock.computeIfAbsent(lockKey, kg -> new WeakReference<>(new ReentrantLock(), queue)).get();
-		lock.lock();
+		Lock lock = mapLock.computeIfAbsent(lockKey, kg -> new SoftReference<>(new ReentrantLock(), queue)).get();
+		// 一定不为null，不过idea会提示，为了消除提示加上不为null判断
+		if (lock != null) {
+			lock.lock();
+		}
 	}
 
 	@Override
 	public void unlock(String lockKey) {
-		mapLock.computeIfPresent(lockKey, (k, v) -> {
-			v.get().unlock();
-			return v;
-		});
+		// 删除缓存、解锁
+		SoftReference<Lock> remove = mapLock.remove(lockKey);
+		if (remove != null) {
+			Lock lock = remove.get();
+			if (lock != null) {
+				lock.unlock();
+			}
+		}
 	}
 
 	@Override
-	public void lock(String lockKey, int expiraTime) {
-		Lock lock = mapLock.computeIfAbsent(lockKey, kg -> new WeakReference<>(new ReentrantLock(), queue)).get();
+	public void lock(String lockKey, int expireTime) {
+		Lock lock = mapLock.computeIfAbsent(lockKey, kg -> new SoftReference<>(new ReentrantLock(), queue)).get();
 		try {
-			lock.tryLock(expiraTime, TimeUnit.SECONDS);
+			if (lock != null) {
+				lock.tryLock(expireTime, TimeUnit.SECONDS);
+			}
 		} catch (InterruptedException e) {
 			log.error("try lock error: ", e);
 		}
 	}
 
 	@Override
-	public boolean tryLock(String lockKey, int expiraTime, int waitTime) {
-		Lock lock = mapLock.computeIfAbsent(lockKey, kg -> new WeakReference<>(new ReentrantLock(), queue)).get();
+	public boolean tryLock(String lockKey, int expireTime, int waitTime) {
+		Lock lock = mapLock.computeIfAbsent(lockKey, kg -> new SoftReference<>(new ReentrantLock(), queue)).get();
 		try {
-			return lock.tryLock(expiraTime, TimeUnit.SECONDS);
+			if (lock != null) {
+				return lock.tryLock(expireTime, TimeUnit.SECONDS);
+			}
 		} catch (InterruptedException e) {
 			log.error("try lock error: ", e);
-			return false;
 		}
+		return false;
 	}
-	
+
 	/**
 	 * 缓存对象
 	 */
-	private class CacheObejct{
+	private static class CacheObejct{
+
 		private String key;	// 数据键
 		private Object value; // 数据值
-		private Integer expiraTime; // 过期时间，秒
+		private Integer expireTime; // 过期时间，秒
 		private Long removeTime; // 删除时间
 
 		public CacheObejct(String key, Object value) {
@@ -151,24 +189,25 @@ public class LocalBaseCache implements BaseCache {
 			this.value = value;
 		}
 
-		public CacheObejct(String key, Object value, int expiraTime) {
+		public CacheObejct(String key, Object value, int expireTime) {
 			this.key = key;
 			this.value = value;
-			this.expiraTime = expiraTime;
-			this.removeTime = System.currentTimeMillis() + expiraTime*1000;
+			this.expireTime = expireTime;
+			this.removeTime = System.currentTimeMillis() + expireTime*1000;
 		}
 
 		public String getKey() {
 			return key;
 		}
-		
+
 		public Object getValue() {
 			return value;
 		}
 
-		public Integer getExpiraTime() {
-			return expiraTime;
+		public Integer getExpireTime() {
+			return expireTime;
 		}
+
 		public Long getRemoveTime() {
 			return removeTime;
 		}

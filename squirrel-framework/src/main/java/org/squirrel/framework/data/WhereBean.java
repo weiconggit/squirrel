@@ -23,7 +23,7 @@ public class WhereBean {
 
     private final String name; // 字段名，sys_name
     private final Object value; // 字段对应值
-    private final String type; // 条件类型，=,>,<,!=,like等，可任意输入，但需确保能sql正确
+    private final String type; // 条件类型，=,>,<,!=,like等，需确保能sql正确
 
     public WhereBean(String name, Object value) {
         this.name = name;

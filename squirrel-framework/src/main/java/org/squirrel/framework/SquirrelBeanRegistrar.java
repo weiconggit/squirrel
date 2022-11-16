@@ -61,18 +61,16 @@ public class SquirrelBeanRegistrar implements ImportBeanDefinitionRegistrar {
 
 		// 扫描所有待注册的 spring bean
 		Set<Class<?>> classes = ClassUtil.getClasses(packageName);
-		Iterator<Class<?>> iterator = classes.iterator();
-		while (iterator.hasNext()) {
-			Class<?> clazz = iterator.next();
+		for (Class<?> clazz : classes) {
 			Annotation[] declaredAnnotations = clazz.getDeclaredAnnotations();
 			for (Annotation annotation : declaredAnnotations) {
 				if (annotation instanceof SquirrelComponent) {
 					registry.registerBeanDefinition(StrUtil.lowerFirstLetter(clazz.getSimpleName()), new RootBeanDefinition(clazz));
-					
+
 					if (log.isDebugEnabled()) {
 						log.debug("{} Framework registry bean: {}", SquirrelProperties.LOG_SIGN, clazz.getSimpleName());
 					}
-					
+
 					break;
 				}
 			}
@@ -94,7 +92,7 @@ public class SquirrelBeanRegistrar implements ImportBeanDefinitionRegistrar {
 	 * @param registry
 	 */
 	private void registryBaseCacheBean(BeanDefinitionRegistry registry) {
-		// 2021年5月10日 增加 redisson 配置文件名定义
+		// redisson 配置文件名定义
 		String redissonFileName = SquirrelProperties.REDISSON_FILE_NAME;
 		String baseCache = StrUtil.lowerFirstLetter(BaseCache.class.getSimpleName());
 		// 无配置文件时，启用 本地缓存 否则启用 redisson

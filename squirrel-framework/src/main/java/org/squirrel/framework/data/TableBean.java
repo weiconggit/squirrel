@@ -15,7 +15,7 @@ public class TableBean {
     private final String name; // sys_user
     private final Field[] fields; // 实体对象的字段信息
     private final List<String> fieldNames; // 顺序表字段：sys_id,sys_name,...
-    private final Map<String, String> fieldTypeMap; // 字段类型，sysName -> Integer
+    private final Map<String, String> fieldTypeMap; // 字段类型，sysName -> java.lang.Integer
     private final Map<String, String> fieldNameMap; // sysName -> sys_name
 
     public TableBean(String name, Field[] fields, List<String> fieldNames, Map<String, String> fieldTypeMap, Map<String, String> fieldNameMap) {

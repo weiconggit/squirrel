@@ -38,7 +38,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.squirrel</groupId>
-			<artifactId>squirrel-sys</artifactId>
+			<artifactId>squirrel-framework</artifactId>
 			<version>1.0</version>
 		</dependency>
 	</dependencies>

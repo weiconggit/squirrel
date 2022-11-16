@@ -52,7 +52,7 @@ public class SquirrelAuthInterceptor implements HandlerInterceptor, SquirrelInit
 	@Override
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
 			throws Exception {
-		log.info("auth intercepte: {}", request.getRequestURI());
+		log.info("SquirrelAuthInterceptor uri is : {}", request.getRequestURI());
 		return true;
 		// 是否是静态资源请求，仅在无三方图片服务时提供
 //		Object attribute = request.getAttribute(IMG_URL_SIGN);
@@ -78,8 +78,8 @@ public class SquirrelAuthInterceptor implements HandlerInterceptor, SquirrelInit
 		}
 		String method = request.getMethod();
 		String uri = request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE).toString();
-		String menuId = null;
 		String key = method + uri;
+		String menuId;
 		if (method.equals("GET")) {
 			menuId = RESOURCE_GET.get(key);
 		} else {
@@ -93,10 +93,7 @@ public class SquirrelAuthInterceptor implements HandlerInterceptor, SquirrelInit
 			return false;
 		}
 		Set<String> menuIds = authUser.getMenuIds();
-		if (menuIds != null && !menuIds.isEmpty() && menuIds.contains(menuId)) {
-			return true;
-		}
-		return false;
+		return menuIds != null && !menuIds.isEmpty() && menuIds.contains(menuId);
 	}
 
 //	private boolean imgCheck(HttpServletRequest request, String imgUri) {

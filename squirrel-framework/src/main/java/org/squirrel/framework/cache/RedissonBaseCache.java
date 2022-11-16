@@ -22,29 +22,29 @@ public class RedissonBaseCache implements BaseCache {
 
     private static RedissonClient redissonClient;
 
-    public RedissonBaseCache(RedissonClient redissonCli){
-        redissonClient = redissonCli;
+    public RedissonBaseCache(RedissonClient redissonClient){
+        RedissonBaseCache.redissonClient = redissonClient;
     }
 
     @Override
-    public void remove(String key) {
+    public boolean remove(String key) {
         RBucket<Object> bucket = redissonClient.getBucket(key);
         if (bucket != null) {
-            bucket.delete();
+            return bucket.delete();
         }
+        return false;
     }
 
     @Override
     public <T> Optional<T> get(String key, Class<T> clazz) {
         RBucket<Object> bucket = redissonClient.getBucket(key);
-        if (bucket.isExists()) {
+        if (bucket != null && bucket.isExists()) {
             Object object = bucket.get();
             if (object != null) {
                 try {
-                    return Optional.ofNullable((T)object);
+                    return Optional.of(clazz.cast(object));
                 } catch (Exception e) {
                     log.error("can not cast value {} to {}", object, clazz);
-                    return Optional.empty();
                 }
             }
         }
@@ -54,7 +54,7 @@ public class RedissonBaseCache implements BaseCache {
     @Override
     public Optional<Object> get(String key) {
         RBucket<Object> bucket = redissonClient.getBucket(key);
-        if (bucket.isExists()) {
+        if (bucket != null && bucket.isExists()) {
             return Optional.ofNullable(bucket.get());
         }
         return Optional.empty();
@@ -66,8 +66,8 @@ public class RedissonBaseCache implements BaseCache {
     }
 
     @Override
-    public void put(String key, Object object, int expiraTime) {
-        redissonClient.getBucket(key).set(object, expiraTime, TimeUnit.SECONDS);
+    public void put(String key, Object object, int expireTime) {
+        redissonClient.getBucket(key).set(object, expireTime, TimeUnit.SECONDS);
     }
 
     @Override
@@ -77,7 +77,10 @@ public class RedissonBaseCache implements BaseCache {
 
     @Override
     public void unlock(String lockKey) {
-        redissonClient.getLock(lockKey).unlock();
+        RLock lock = redissonClient.getLock(lockKey);
+        if (lock != null) {
+            lock.unlock();
+        }
     }
 
     @Override
@@ -92,7 +95,7 @@ public class RedissonBaseCache implements BaseCache {
             return lock.tryLock(waitTime, leaseTime, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             log.error("try lock error: ", e);
-            return false;
         }
+        return false;
     }
 }

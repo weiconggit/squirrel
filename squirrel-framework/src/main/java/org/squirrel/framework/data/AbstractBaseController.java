@@ -77,7 +77,8 @@ public abstract class AbstractBaseController<T> implements BaseController<T>, Sq
 		this.validator = ApplicationContextHelper.getBean(Validator.class);
 	}
 
-	@Deprecated // 仅测试使用
+	// 仅测试使用
+	@Deprecated
 	@Authority(AuthorityMenuLoader.ADD)
 	@ApiOperation(value = "新增批量")
 	@PostMapping(value = "addba")
@@ -123,7 +124,7 @@ public abstract class AbstractBaseController<T> implements BaseController<T>, Sq
 	@DeleteMapping(value = DEL)
 	@Override
 	public Rp<T> remove(@PathVariable(value = "ids") Set<String> ids) {
-		return getBaseService().deleteByIds(ids);
+		return getBaseService().logicDeleteByIds(ids);
 	}
 
 	@Authority(AuthorityMenuLoader.GET)
@@ -224,7 +225,7 @@ public abstract class AbstractBaseController<T> implements BaseController<T>, Sq
 							break;
 						case "java.lang.Boolean":
 						case "java.lang.Character":
-						case "java.lang.Interger":
+						case "java.lang.Integer":
 						case "java.lang.Long":
 						case "java.lang.Double":
 						case "java.lang.Float":
