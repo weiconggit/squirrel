@@ -2,12 +2,14 @@ package org.squirrel.framework.auth;
 
 import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.*;
+import org.squirrel.framework.auth.annotation.Authority;
 import org.squirrel.framework.cache.BaseCache;
 import org.squirrel.framework.response.Rp;
 import org.squirrel.framework.response.RpEnum;
 import org.squirrel.framework.util.StrUtil;
 
 import javax.annotation.Resource;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -82,4 +84,11 @@ public abstract class AbstractAuthenticationController<T> implements Authenticat
 	 */
 	protected abstract Rp<T> deleteSysUser(String userId);
 
+	@Authority("menu")
+	@ApiOperation(value = "获取权限菜单")
+	@GetMapping(value = "menu")
+	public Rp<List<AuthorityMenu>> menu() {
+		List<AuthorityMenu> authorityMenus = AuthorityMenuLoader.loadMenus();
+		return Rp.success(authorityMenus);
+	}
 }
