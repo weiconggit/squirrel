@@ -15,22 +15,22 @@ import java.util.Map;
 public interface SquirrelMybatisDao<T> {
 
 	/**
-	 * 条件sql脚本
+	 * 条件sql脚本，不能出现test=“ xx!="11" ”，只能是test=‘ xx!="11" ’
 	 */
 	 String whereSqlScript = ""
 			+ "<if test=\"whereBeans != null\">"
 			+ 	"<where>"
-			+ 		"<foreach collection=\"whereBeans\" separator=\"\" open=\"\" close=\"\" index=\"\" item=\"item\">"
-			+ 			"<if test=\"item.value != null and item.type != \"IN\" and item.type != \"LIKE\" \">"
+			+ 		"<foreach collection=\"whereBeans\" separator=\"\" open=\"\" close=\"\" index=\"\" item=\"item\" >"
+			+ 			"<if test='item.value != null and item.type != \"IN\" and item.type != \"LIKE\"' >"
 			+ 				"AND ${item.name} ${item.type} #{item.value}"
 			+ 			"</if>"
-			+ 			"<if test=\"item.value != null and item.type == \"IN\" \">"
+			+ 			"<if test='item.value != null and item.type == \"IN\"'>"
 			+ 				"AND ${item.name} IN "
-			+ 				"<foreach collection=\"item.value\" separator=\"\" open=\"(\" close=\")\" index=\"\" item=\"item2\">"
+			+ 				"<foreach collection=\"item.value\" separator=\"\" open=\"(\" close=\")\" index=\"\" item=\"item2\" >"
 			+					"#{item2}"
 			+ 				"</foreach>"
 			+ 			"</if>"
-			+ 			"<if test=\"item.value != null and item.type == \"LIKE\" \">"
+			+ 			"<if test='item.value != null and item.type == \"LIKE\"'>"
 			+ 				"AND ${item.name} LIKE concat('%',#{item.value},'%')"
 			+ 			"</if>"
 			+ 		"</foreach>"

@@ -2,7 +2,8 @@ package org.squirrel.test.web;
 
 import org.springframework.stereotype.Repository;
 import org.squirrel.framework.data.BaseDao;
-import org.squirrel.sys.user.UserVO;
+import org.squirrel.test.user.User;
+import org.squirrel.test.user.UserVO;
 
 /**
  * <p>用户信息 Mapper</p>
@@ -12,10 +13,11 @@ import org.squirrel.sys.user.UserVO;
  */
 @Repository
 public interface TestMapper extends BaseDao<UserVO> {
+//public interface TestMapper  {
 
 	@Override
-	default Class<UserVO> getEntityClass() {
-		return UserVO.class;
+	default Class<User> getEntityClass() {
+		return User.class;
 	}
 
 }

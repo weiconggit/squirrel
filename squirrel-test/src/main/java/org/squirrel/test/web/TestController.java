@@ -31,8 +31,8 @@ public class TestController {
 	private BaseCache baseCache;
 	@Resource
 	private TestMapper testMapper;
-	@Resource
-	private TestService testService;
+//	@Resource
+//	private TestService testService;
 	
 //	@GetMapping("auth")
 //	public AuthUser testAuth() {
@@ -42,8 +42,7 @@ public class TestController {
 	@ApiOperation(value="获取列表信息")
 	@GetMapping("alive")
 	public String alive() {
-//		redissonClient.getMap("a").put("1", "1");
-		return "test api";
+		return "service is ready";
 	}
 	
 //	@GetMapping("test/{name}")

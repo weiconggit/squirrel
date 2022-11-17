@@ -1,15 +1,11 @@
 package org.squirrel.test.web;
 
-import javax.annotation.Resource;
-
 import org.springframework.stereotype.Service;
-import org.squirrel.framework.data.AbstractBaseService;
 import org.squirrel.framework.data.BaseDao;
 import org.squirrel.framework.data.BaseService;
-import org.squirrel.framework.response.Rp;
-import org.squirrel.sys.user.UserVO;
+import org.squirrel.test.user.UserVO;
 
-import java.util.Set;
+import javax.annotation.Resource;
 
 @Service
 public class TestService implements BaseService<UserVO> {
