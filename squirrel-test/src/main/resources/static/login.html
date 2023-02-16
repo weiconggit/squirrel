@@ -85,14 +85,16 @@
 		
 		<!-- 2022年11月30日 vue处理 -->
 		<script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
-		<script type="text/javascript" src="static/js/squirrel.js"></script>
+		<script type="text/javascript" src="static/squirrel/util.js"></script>
+		<!-- ajax请求 -->
+		<script type="text/javascript" src="http://ajax.microsoft.com/ajax/jquery/jquery-1.4.min.js"></script>
 		
 		<script type="text/javascript">
 			var formApp = new Vue({
 				el: '#formApp',
 				data: {
-					loginErrMsg: '账号或密码错误！',
 					loginErrSeen: false,
+					loginErrMsg: '账号或密码错误！',
 					keepLoginTip: '浏览器会记住账号密码，下次登录不用再次输入',
 					username: null,
 					password: null
@@ -100,24 +102,36 @@
 				methods: {
 					loginFun: function() {
 						if (squirrelUtil.isEmpty(this.username) && squirrelUtil.isEmpty(this.password)) {
+							this.loginErrSeen = true;
 							this.loginErrMsg = "请输入账号和密码";
-							this.loginErrSeen = true;
 						} else if (squirrelUtil.isEmpty(this.username)) {
+							this.loginErrSeen = true;
 							this.loginErrMsg = "请输入账号";
-							this.loginErrSeen = true;
 						} else if (squirrelUtil.isEmpty(this.password)) {
-							this.loginErrMsg = "请输入密码";
 							this.loginErrSeen = true;
+							this.loginErrMsg = "请输入密码";
 						} else {
 							this.loginErrSeen = false;
-							// TODO
-							console.log(this.username + "," + this.password);
-							window.location.href = "sys.html";
+							$.ajax({
+								url:"/test/alive" , // 请求路径
+								type:"GET" , //请求方式
+								//data: "username=jack&age=23",//请求参数
+								//data:{"username":"jack","age":23},
+								success:function (data) {
+									console.log(data);
+									// TODO js缓存 sessionstorage或localStorage
+									window.location.href = "index.html";
+								},
+								error: function () {
+									this.loginErrMsg = "出错啦...";
+								}
+							})
 						}
 					}
 				}
 			});
 		</script>
+		
 	</body>
 
 </html>
