@@ -84,7 +84,8 @@
 		<!-- endinject -->
 		
 		<!-- 2022年11月30日 vue处理 -->
-		<script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+		<!--<script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>-->
+		<script src="static/squirrel/vue.js"></script>
 		<script type="text/javascript" src="static/squirrel/util.js"></script>
 		<!-- ajax请求 -->
 		<script type="text/javascript" src="http://ajax.microsoft.com/ajax/jquery/jquery-1.4.min.js"></script>
@@ -113,18 +114,23 @@
 						} else {
 							this.loginErrSeen = false;
 							$.ajax({
-								url:"/test/alive" , // 请求路径
-								type:"GET" , //请求方式
-								//data: "username=jack&age=23",//请求参数
-								//data:{"username":"jack","age":23},
-								success:function (data) {
-									console.log(data);
-									// TODO js缓存 sessionstorage或localStorage
-									window.location.href = "index.html";
+								url:"/auth/login" , // 请求路径
+								type:"POST" , //请求方式，默认application/x-www-form-urlencoded，需设置contentType
+								contentType:"application/json",
+								data:JSON.stringify({"username":formApp.username,"password":formApp.password}),
+								success:function (rp) {
+									if (rp.code < 0) {
+										formApp.loginErrSeen = true;
+										formApp.loginErrMsg = rp.msg;
+										console.log(rp.msg);
+									} else {
+										// TODO js缓存 sessionstorage或localStorage
+										window.location.href = "index.html";
+									}
 								},
-								error: function () {
-									this.loginErrMsg = "出错啦...";
-								}
+								// error: function () {
+								// 	this.loginErrMsg = "出错啦...";
+								// }
 							})
 						}
 					}

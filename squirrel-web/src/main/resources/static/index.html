@@ -209,7 +209,9 @@
         <!-- partial:partials/_sidebar.html -->
         <nav class="sidebar sidebar-offcanvas" id="sidebar">
 		<!-- 导航栏开始 -->
-		<nav-component></nav-component>
+          <div id="haha">
+            <nav-component></nav-component>
+          </div>
 		<!-- 导航栏结束 -->
 		
 		<!-- 2022年11月30日 暂时不需要 -->
@@ -778,7 +780,8 @@
     <!-- End custom js for this page-->
 	
 	<!-- vue -->
-	<script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+	<!--<script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>-->
+    <script src="static/squirrel/vue.js"></script>
 	<script type="text/javascript" src="static/squirrel/util.js"></script>
 	<script type="text/javascript" src="http://ajax.microsoft.com/ajax/jquery/jquery-1.4.min.js"></script>
 	<!-- 引入 http-vue-loader -->
@@ -788,7 +791,7 @@
 		// 使用httpVueLoader
 		Vue.use(httpVueLoader);
 		new Vue({
-			el: '#navid',
+			el: '#haha',
 			data: function () {
 				return { 
 					//visible: false ,
